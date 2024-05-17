@@ -1,0 +1,249 @@
+/*************************/
+/*        PRESET         */
+/*************************/
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif; 
+}
+
+body
+{
+  display: flex; 
+  flex-direction: column; 
+  margin: auto;
+  min-height: 100vh; 
+  width: 100%;
+  align-items: stretch; /* assure que les enfants s'étendent en largeur */
+}
+
+html, body {
+    overflow-x: hidden; /* cache le débordement horizontal */
+    width: 100%;
+    overflow-y: auto; /* permet le défilement vertical si nécessaire */
+    margin: 0;
+    padding: 0;
+}
+
+li {
+  list-style-type: none; 
+}
+
+main {
+    flex: 1; /* permet à main de s'étendre pour occuper tout l'espace disponible, comme ça le footer reste en bas*/
+}
+
+a{
+  text-decoration: none;
+  color: white;
+}
+
+h1{
+    font-size: 1.70rem;
+}
+
+
+h1 :hover{
+    text-decoration: underline;
+  }
+  
+h4{
+  color: black;
+  text-decoration: underline;
+}
+
+h4:hover{
+  color: rgba(0, 0, 0, 0.582);
+}
+
+button:hover{
+  background-color: grey;
+}
+
+@media (max-width: 480px) {
+    h1{
+      font-size: 18px;
+      margin:10px;
+    }
+  }
+
+/*************************/
+/*         NAV           */
+/*************************/
+
+.headContainer{
+    height: 195px;
+}
+
+nav{
+    height: 80px;
+    background-color: #002D2C;
+    text-align: center;
+    color: white;
+}
+  
+.navbar ul {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+}
+  
+#logoImg{
+    width: 295px;
+    height: auto;
+    position: absolute;
+    left: 50%;
+    margin-top: 45px;
+    z-index: 0;
+    transform: translate(-50%, -50%);
+}
+
+.left-content,
+.center-content,
+.right-content {
+    display: flex;
+}
+
+  .active {
+    text-decoration: underline;
+  }
+
+/*************************/
+/*        ACCUEIL        */
+/*************************/
+
+#contentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+#textBlock {
+background: #EDF2EE; 
+border-radius: 8px; 
+padding: 20px; 
+width: 50%; 
+margin-bottom: 20px; 
+text-align: center; 
+z-index: 1;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+#paragraph {
+color: #000000; 
+font-size: 1.40rem; 
+line-height: 1.5; 
+margin-bottom: 1em; 
+}
+
+#secondParagraph{
+color: #000000; 
+font-size: 1.20rem; 
+line-height: 1.5; 
+}
+
+#activitiesImg{
+    width: 33%;
+    height: auto;
+}
+
+
+/**************************/
+/*         LOGIN          */
+/**************************/
+
+.login-png
+{
+    width: 40%;
+    height: auto;
+}
+
+.form-title{
+    text-align: center;
+    margin: 10px;
+    color: black;
+}
+
+.form-content
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #000000b9; 
+    background-color: #EDF2EE;
+    width: 240px;
+    padding: 30px; 
+    margin: auto;
+}
+
+input, textarea, select, option{
+    color: black; 
+    height: 25px;
+    margin: 5px;
+}
+
+.label-content {
+    text-align: center; 
+}
+
+#submit
+{
+    margin: 15px;
+    width: 40%;
+    color: black;
+}
+
+#pageBefore{
+  color: black;
+  text-decoration: underline;
+  font-style:italic;
+}
+
+#list{
+    color: black;
+    text-decoration: underline;
+  }
+
+button {
+    display: block; 
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    background-color: #000; 
+    color: #fff; 
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #000000a8; 
+  }
+  
+@media(max-width:400px){
+  .form-content{
+    width: 160px;
+  }
+}
+
+/*************************/
+/*        FOOTER         */
+/*************************/
+
+footer {
+    display: flex;
+    height: 80px;
+    width: 100%;
+    font-size: 14px;
+    color: rgb(255, 255, 255);
+    background-color: #002D2C;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+
+#mail {
+    color: white;
+}
