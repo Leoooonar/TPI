@@ -110,6 +110,69 @@ nav{
     text-decoration: underline;
   }
 
+  .myAccount{
+    background-color: #fbeee01c;
+    border: 2.5px solid #4e4e4e52;
+    border-radius: 5px;
+    box-shadow: #10141B 4px 4px 0 0;
+    color: black;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: 400;
+    font-size: 20px;
+    padding: 0 18px;
+    line-height: 50px;
+    text-align: center;
+    text-decoration: none;
+    margin-right: 35px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  align-items: center;
+  background-color: #D1DCCF;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 8px 10px;
+  font-size: 24px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.dropdown-content a:hover {background-color: #A7B9A4;}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+  
+}
+
+h1:hover{
+  text-decoration: underline;
+}
+
+@media (max-width: 380px) {
+  .myAccount{
+    font-weight: 300;
+    font-size: 16px;
+    margin-right: 10px;
+    padding: 0 6px;
+  }
+}
+
+@media (min-width: 768px) {
+    .myAccount {
+      min-width: 100px;
+      padding: 0 25px;
+    }
+  }
+
 /*************************/
 /*        ACCUEIL        */
 /*************************/
@@ -118,6 +181,8 @@ nav{
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 1;
   }
   
 #textBlock {
@@ -177,6 +242,8 @@ line-height: 1.5;
     width: 240px;
     padding: 30px; 
     margin: auto;
+    position: relative;
+    z-index: 2;
 }
 
 input, textarea, select, option{

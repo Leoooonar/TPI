@@ -17,7 +17,7 @@ if (isset($_SESSION['user'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,10 +33,30 @@ if (isset($_SESSION['user'])) {
                             <li><h1>LISTE DES ACTIVITES</h1></li>
                         </div>    
                         <div class="center-content">
-                            <li><img id="logoImg" src="/resources/img/logo.webp" alt=""></li>
+                            <li><a href="#"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
                         </div>
                         <div class="right-content">
-                            <li><h1>SE CONNECTER</h1></li>
+                            <?php
+                                if ($isLoggedIn) {
+                                    echo '<li class="nav-item dropdown">';
+                                        echo '<h1>MON COMPTE</h1>';
+                                        echo '<a href="javascript:void(0)" class="dropbtn"></a>';
+                                        echo '<div class="dropdown-content">';
+                                        echo '<a href="./resources/views/userDetails.php">Détail du compte</a>';
+                                        echo '<a href="./resources/views/myActivities.php">Mes activités</a>';
+                                        echo '<a href="./resources/views/logout.php">Déconnexion</a>';
+                                        echo '</div>';
+                                    echo '</li>';
+                                } else {
+                                    echo '<li class="nav-item dropdown">';
+                                    echo '<a href="./resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                                    echo '<a href="javascript:void(0)" class="dropbtn"></a>';
+                                        echo '<div class="dropdown-content">';
+                                        echo '<a href="./resources/views/authentification/register.php">Inscription</a>'; 
+                                        echo '</div>';
+                                    echo '</li>';
+                                }
+                            ?>
                         </div>
                     </ul>
                 </nav>

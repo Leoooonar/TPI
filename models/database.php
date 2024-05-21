@@ -3,6 +3,10 @@
 //Auteur: Leonar Dupuis                                            
 //Date: 17.05.2024       
 //Description : Page gérant fonctions directement lié à la base de données, permet la connexion à la db.  
+//
+// Version : 1.0.1
+// Date : 21.05.2024
+// Description : Ajout des méthodes checkLogin et registerUser
 
 class Database {
     private $host = "host.docker.internal"; 
@@ -22,7 +26,7 @@ class Database {
             exit();
         }
     }
-
+    
     //Méthode pour préparer et exécuter une requête avec des paramètres
     private function queryPrepare($query, $params = array()) {
         try {
@@ -55,4 +59,50 @@ class Database {
             return false;
         }
     }
+
+    /////////////////////////////////////////////////////////////////////
+    //                      GESTION UTILISATEURS                       //
+    /////////////////////////////////////////////////////////////////////
+    
+    //Méthode pour vérifier le login
+    public function checkLogin($username, $password) {
+        $query = "SELECT * FROM t_user WHERE useNickname = :username";
+        $stmt = $this->queryPrepare($query, array(':username' => $username));
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        if ($row && password_verify($password, $row['usePassword'])) {
+            // Le mot de passe est correct, stocker l'utilisateur dans la session
+            $_SESSION['user'] = $row;
+            return true;
+        }
+    
+        // si le nom d'utilisateur ou le mot de passe est incorrect, retourne false
+        return false;
+    }
+        
+    public function registerUser($username, $password, $firstname, $name) {
+        try {
+            // Hasher le mot de passe
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    
+            // Préparer la requête d'insertion
+            $query = "INSERT INTO t_user (useNickname, usePassword, useFirstname, useLastname, useType) 
+                      VALUES (:username, :password, :firstname, :name, 'S')";
+            $params = array(
+                ':username' => $username,
+                ':password' => $hashed_password,
+                ':firstname' => $firstname,
+                ':name' => $name
+            );
+            $this->queryPrepare($query, $params);
+    
+            // Si l'insertion a réussi, retourner true
+            return true;
+        } catch(PDOException $e) {
+            // Une erreur s'est produite lors de l'insertion
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
 }
+?>
