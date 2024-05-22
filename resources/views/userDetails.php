@@ -1,11 +1,11 @@
 <?php
 //ETML
 //Auteur: Leonar Dupuis                                            
-//Date: 17.05.2024       
-//Description : page d'accueil du site     
+//Date: 22.05.2024       
+//Description : Page détails de l'utilisateur 
 
 session_start();
-include("./models/database.php");
+include("../../models/database.php");
 $db = new Database();
 
 // Vérifie si l'utilisateur est connecté
@@ -14,6 +14,8 @@ if (isset($_SESSION['user'])) {
     $isLoggedIn = true;
 } else {
     $isLoggedIn = false;
+    header("Location: ./authentification/login.php"); // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -21,8 +23,8 @@ if (isset($_SESSION['user'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil</title>
-    <link rel="stylesheet" href="./resources/css/style.css">
+    <title>Profil utilisateur</title>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
     <body>
         <main>
@@ -61,23 +63,38 @@ if (isset($_SESSION['user'])) {
                     </ul>
                 </nav>
             </div>    
-            <div id="contentContainer">
-                <div id="textBlock">
-                    <p id="paragraph">
-                        Bienvenue sur notre plateforme dédiée à l'enrichissement culturel et sportif !<br>
-                        Ici, nous facilitons la connexion entre les organisteurs d'activités et les élèves désireux de s'épanouir à travers une multitude
-                        d'activités choisies.
-                    </p>
-                    <hr>
-                    <br>
-                    <p id="secondParagraph">
-                        Veuillez vous <a href="./resources/views/authentification/login.php" id="list">connecter</a> afin de pouvoir vous inscrire<br>
-                        à une activité sportive ou culturelle.
-                    </p>
-                </div>
-                <br>
-                <img id="activitiesImg" src="/resources/img/activities.jpg" alt="Image d'activités diverses">
-            </div>
+            <br>
+            <h2 id="secondTitle">Informations générales</h2>
+            <hr>
+            <?php
+                if ($isLoggedIn) {
+                    echo '<div class="infoContainer">';
+
+                        echo '<div class="userType">';
+                        if ($user['useType'] == 'S'){
+                            echo '<h5>Etudiant</h5>';
+                        } else {
+                            echo '<h5>Enseignant</h5>';
+                        }
+                        echo '</div>';
+                        
+                        echo '<br>';
+                        echo '<p><strong>Nom d\'utilisateur:</strong> ' . $user['useNickname'] . '</p>';
+                        echo '<br>';
+                        echo '<p><strong>Prénom:</strong> ' . ($user['useFirstname'] ?? 'Non renseigné') . '</p>';
+                        echo '<br>';
+                        echo '<p><strong>Nom:</strong> ' . ($user['useLastname'] ?? 'Non renseigné') . '</p>';
+                        echo '<br>';
+                        echo '<p><strong>Adresse e-mail:</strong> ' . ($user['useEmail'] ?? 'Non renseignée') . '</p>';
+                        echo '<br>';
+                        echo '<p><strong>Genre:</strong> ' . ($user['useGender'] ?? 'Non renseigné') . '</p>';
+                        echo '<br>';
+
+                        // Bouton d'ajouts/modifications d'informations
+                        echo '<a href="userEditDetails.php"><button type="submit">Modifier</button></a>';
+                    echo '</div>';
+                }
+            ?> 
         </main>
         <footer>
             <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 

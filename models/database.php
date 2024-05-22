@@ -7,6 +7,10 @@
 // Version : 1.0.1
 // Date : 21.05.2024
 // Description : Ajout des méthodes checkLogin et registerUser
+//
+// Version : 1.0.1
+// Date : 22.05.2024
+// Description : Ajout de la méthode UpdateUserInfo
 
 class Database {
     private $host = "host.docker.internal"; 
@@ -19,10 +23,14 @@ class Database {
     //Constructeur
     public function __construct() {
         try {
-            $this->conn = new PDO("mysql:host={$this->host};port={$this->port};dbname={$this->database}", $this->username, $this->password);
+            $this->conn = new PDO("mysql:host={$this->host};
+            port={$this->port};
+            dbname={$this->database}", 
+            $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            echo "Connexion réussie: ";
         } catch(PDOException $e) {
-            echo "Connection échouée: " . $e->getMessage();
+            echo "Connexion échouée: " . $e->getMessage();
             exit();
         }
     }
@@ -86,7 +94,8 @@ class Database {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     
             // Préparer la requête d'insertion
-            $query = "INSERT INTO t_user (useNickname, usePassword, useFirstname, useLastname, useType) 
+            $query = "INSERT INTO t_user (useNickname, usePassword, 
+            useFirstname, useLastname, useType) 
                       VALUES (:username, :password, :firstname, :name, 'S')";
             $params = array(
                 ':username' => $username,
@@ -104,5 +113,40 @@ class Database {
             return false;
         }
     }
+
+    public function updateUserInfo($userId, $newNickname, $newFirstname, $newLastname, $newEmail, $newGender) {
+        try {
+            $query = "UPDATE t_user 
+                      SET useNickname = :username,
+                          useFirstname = :firstname, 
+                          useLastname = :lastname, 
+                          useEmail = :email, 
+                          useGender = :gender 
+                      WHERE idUser = :userId";
+    
+            $params = array(
+                ':username' => $newNickname,
+                ':firstname' => $newFirstname,
+                ':lastname' => $newLastname,
+                ':email' => $newEmail,
+                ':gender' => $newGender,
+                ':userId' => $userId
+            );
+    
+            $result = $this->queryPrepare($query, $params);
+    
+            if ($result === false) {
+                throw new Exception("Erreur lors de la mise à jour des informations de l'utilisateur.");
+            }
+    
+            return true; // Retourne true si la mise à jour est réussie
+        } catch(Exception $e) {
+            // Gère l'erreur
+            echo "Error: " . $e->getMessage();
+            return false; // Retourne false en cas d'erreur
+        }
+    }
+    
+    
 }
 ?>

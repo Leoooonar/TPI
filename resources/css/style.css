@@ -288,10 +288,72 @@ button {
   button:hover {
     background-color: #000000a8; 
   }
+
+  h5{
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-decoration: underline;
+  }
   
 @media(max-width:400px){
   .form-content{
     width: 160px;
+  }
+}
+
+/*************************/
+/*      USER DETAILS     */
+/*************************/
+
+.infoContainer{
+  display: flex;
+  justify-content: center;
+  margin: auto;
+  flex-wrap: wrap;
+  flex-direction: column;
+  width: 23%;
+  border: 2px solid #000000b9; 
+  padding: 40px;
+  margin-top: 20px;
+  color: black
+ }
+
+  #details{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+#secondTitle{
+  text-align: center;
+  margin: 15px;
+}
+
+.userType{
+  margin: auto;
+}
+
+.userContainer{
+  display: flex;
+  justify-content: center;
+  margin: auto;
+  flex-wrap: wrap;
+  width: 23%;
+  border: 2px solid #000000b9; 
+  padding: 40px;
+  margin-top: 20px;
+  color: black
+}
+
+@media (max-width: 760px) {
+  input#username, input#firstname, input#lastname, input#email, select#gender, select#placeType, input#reservationDate{
+    width: 110px;
+  }
+}
+
+@media (max-width: 500px) {
+  input#username, input#firstname, input#lastname, input#email, select#gender{
+    width: 70px;
   }
 }
 
