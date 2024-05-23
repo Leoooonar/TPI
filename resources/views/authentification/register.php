@@ -23,7 +23,7 @@ $isLoggedIn = isset($_SESSION['user']);
             <nav class="navbar">
                 <ul>
                     <div class="left-content">
-                        <li><h1>LISTE DES ACTIVITES</h1></li>
+                        <a href="../activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
                     </div>    
                     <div class="center-content">
                         <li><a href="../../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
@@ -34,18 +34,18 @@ $isLoggedIn = isset($_SESSION['user']);
                                 echo '<li class="nav-item dropdown">';
                                 echo '<h1>MON COMPTE</h1>';
                                 echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                echo '<div class="dropdown-content">';
-                                echo '<a href="./resources/views/userDetails.php">Détail du compte</a>';
-                                echo '<a href="./resources/views/myActivities.php">Mes activités</a>';
-                                echo '<a href="../logout.php">Déconnexion</a>';
-                                echo '</div>';
+                                    echo '<div class="dropdown-content">';
+                                    echo '<a href="../userDetails.php">Détail du compte</a>';
+                                    echo '<a href="../myActivities.php">Mes activités</a>';
+                                    echo '<a href="../logout.php">Déconnexion</a>';
+                                    echo '</div>';
                                 echo '</li>';
                             } else {
                                 echo '<li class="nav-item dropdown">';
                                 echo '<a href="login.php"><h1>SE CONNECTER</h1></a>';
                                 echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                     echo '<div class="dropdown-content">';
-                                    echo '<a href="./resources/views/authentification/register.php">Inscription</a>'; 
+                                    echo '<a href="#">Inscription</a>'; 
                                     echo '</div>';
                                 echo '</li>';
                             }

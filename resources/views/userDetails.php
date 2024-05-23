@@ -32,21 +32,25 @@ if (isset($_SESSION['user'])) {
                 <nav class="navbar">
                     <ul>
                         <div class="left-content">
-                            <li><h1>LISTE DES ACTIVITES</h1></li>
+                            <div>
+                                <a href="activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
+                            </div>
                         </div>    
                         <div class="center-content">
-                            <li><a href="#"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
+                            <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
                         </div>
                         <div class="right-content">
                             <?php
                                 if ($isLoggedIn) {
                                     echo '<li class="nav-item dropdown">';
+                                        echo '<div class="active">';
                                         echo '<h1>MON COMPTE</h1>';
+                                        echo '</div>';
                                         echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                         echo '<div class="dropdown-content">';
-                                        echo '<a href="./resources/views/userDetails.php">Détails du compte</a>';
-                                        echo '<a href="./resources/views/myActivities.php">Mes activités</a>';
-                                        echo '<a href="./resources/views/logout.php">Déconnexion</a>';
+                                        echo '<a href="userDetails.php">Détails du compte</a>';
+                                        echo '<a href="myActivities.php">Mes activités</a>';
+                                        echo '<a href="logout.php">Déconnexion</a>';
                                         echo '</div>';
                                     echo '</li>';
                                 } else {
@@ -77,7 +81,6 @@ if (isset($_SESSION['user'])) {
                             echo '<h5>Enseignant</h5>';
                         }
                         echo '</div>';
-                        
                         echo '<br>';
                         echo '<p><strong>Nom d\'utilisateur:</strong> ' . $user['useNickname'] . '</p>';
                         echo '<br>';
@@ -99,6 +102,6 @@ if (isset($_SESSION['user'])) {
         <footer>
             <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 
         </footer>
-        <script src="./resources/js/script.js"></script>
+        <script src="../js/script.js"></script>
     </body>
 </html>

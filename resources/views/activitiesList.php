@@ -1,8 +1,8 @@
 <?php
 //ETML
 //Auteur: Leonar Dupuis                                            
-//Date: 22.05.2024       
-//Description : Page d'édition des informations de l'utilisateur 
+//Date: 23.05.2024       
+//Description : Page répertoriant liste des activités du site
 
 session_start();
 include("../../models/database.php");
@@ -17,14 +17,13 @@ if (isset($_SESSION['user'])) {
     header("Location: ./authentification/login.php"); // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     exit();
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil utilisateur</title>
+    <title>Liste des activités</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
     <body>
@@ -33,7 +32,9 @@ if (isset($_SESSION['user'])) {
                 <nav class="navbar">
                     <ul>
                         <div class="left-content">
-                            <a href="activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
+                            <div class="active">
+                            <a href="#"><li><h1>LISTE DES ACTIVITES</h1></li></a>
+                            </div>
                         </div>    
                         <div class="center-content">
                             <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
@@ -42,9 +43,7 @@ if (isset($_SESSION['user'])) {
                             <?php
                                 if ($isLoggedIn) {
                                     echo '<li class="nav-item dropdown">';
-                                        echo '<div class="active">';
-                                            echo '<h1>MON COMPTE</h1>';
-                                        echo '</div>';
+                                        echo '<h1>MON COMPTE</h1>';
                                         echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                         echo '<div class="dropdown-content">';
                                         echo '<a href="userDetails.php">Détails du compte</a>';
@@ -67,33 +66,24 @@ if (isset($_SESSION['user'])) {
                 </nav>
             </div>    
             <br>
-            <h2 id="secondTitle">Edition des informations</h2>
+            <h2 id="secondTitle">Liste des activités</h2>
             <hr>
-            <div class="userContainer">
-                <form action="../../controllers/userDetailsCheck.php" id="details" method="POST">
-                    <label for="username">Pseudonyme:</label>
-                    <input type="text" id="username" name="username" value="<?php echo $user['useNickname']; ?>">
-                    <br>
-                    <label for="firstname">Prénom:</label>
-                    <input type="text" id="firstname" name="firstname" value="<?php echo $user['useFirstname'] ?? ''; ?>">
-                    <br>
-                    <label for="lastname">Nom:</label>
-                    <input type="text" id="lastname" name="lastname" value="<?php echo $user['useLastname'] ?? ''; ?>">
-                    <br>
-                    <label for="email">Adresse e-mail:</label>
-                    <input type="email" id="email" name="email" value="<?php echo $user['useEmail'] ?? ''; ?>">
-                    <br>
-                    <label for="gender">Genre:</label>
-                    <select id="gender" name="gender">
-                        <option value="M" <?php echo ($user['useGender'] == 'M') ? 'selected' : ''; ?>>Masculin</option>
-                        <option value="F" <?php echo ($user['useGender'] == 'F') ? 'selected' : ''; ?>>Féminin</option>
-                        <option value="O" <?php echo ($user['useGender'] == 'O') ? 'selected' : ''; ?>>Autre</option>
-                    </select>
-                    <br>
-                    <br>
-                        <button type="submit">Sauvegarder</button>
-                </form>
-            </div>
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>NOM</th>
+                        <th>STATUT</th>
+                        <th>DESCRIPTION</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                        
+                    ?>
+                </tbody>
+            </table>
         </main>
         <footer>
             <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 

@@ -1,8 +1,8 @@
 <?php
 //ETML
 //Auteur: Leonar Dupuis                                            
-//Date: 22.05.2024       
-//Description : Page d'édition des informations de l'utilisateur 
+//Date: 23.05.2024       
+//Description : Page de vérification de la création d'une activité
 
 session_start();
 
@@ -25,13 +25,14 @@ if (isset($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
+    <title>Vérification création activités</title>
     <link rel="stylesheet" href="../../../resources/css/style.css">
 </head>
     <body>
@@ -59,10 +60,10 @@ $user = $_SESSION['user'];
                                     echo '</li>';
                                 } else {
                                     echo '<li class="nav-item dropdown">';
-                                    echo '<a href="../../resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                                    echo '<a href="../resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
                                     echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                         echo '<div class="dropdown-content">';
-                                        echo '<a href="../../resources/views/authentification/register.php">Inscription</a>'; 
+                                        echo '<a href="../resources/views/authentification/register.php">Inscription</a>'; 
                                         echo '</div>';
                                     echo '</li>';                               
                                 }
@@ -70,50 +71,39 @@ $user = $_SESSION['user'];
                         </div>
                     </ul>
                 </nav>
-            </div> 
+            </div>    
             <?php
+
+            // Vérifie si les données du formulaire sont envoyées
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                // Récupérer les données du formulaire soumis
-                $newUsername = $_POST['username'];
-                $newFirstname = $_POST['firstname'];
-                $newLastname = $_POST['lastname'];
-                $newEmail = $_POST['email'];
-                $newGender = $_POST['gender'];
+                $title = $_POST['activity'];
+                $capacity = $_POST['participant'];
+                $description = $_POST['description'];
 
-                if (!preg_match("/^[a-zA-Z]*$/", $newFirstname)) {
-                    $errors[] = "Le prénom ne doit contenir que des lettres";
-                }
-
-                if (!preg_match("/^[a-zA-Z]*$/", $newLastname)) {
-                    $errors[] = "Le nom ne doit contenir que des lettres";
-                }
-
-                // Si des erreurs sont détectées, afficher les messages d'erreur
-                if (!empty($errors)) {
-                    foreach ($errors as $error) {
-                        echo '<div id="contentContainer">';
-                        echo '<br>';
-                        echo "<p>$error</p>";
-                        echo '<br>';
+                // Vérifie que tous les champs sont remplis
+                if (!empty($title) && !empty($capacity) && !empty($description)) {
+                    // Crée une nouvelle activité
+                    $activityId = $db->createActivity($title, $description, $capacity, $user['idUser']);
+                    if ($activityId) {
+                        // Redirige vers le profil d'activités
+                        header("Location: ../resources/views/myActivities.php");
+                        exit();
+                    } else {
+                        echo "Erreur lors de la création de l'activité.";
                     }
                 } else {
-                    // Met à jour les informations de l'utilisateur dans la base de données
-                    $db->updateUserInfo($user['idUser'], $newUsername, $newFirstname, $newLastname, $newEmail, $newGender);
-
-                    $_SESSION['user']['useUsername'] = $newUsername;
-                    $_SESSION['user']['useFirstname'] = $newFirstname;
-                    $_SESSION['user']['useLastname'] = $newLastname;
-                    $_SESSION['user']['useGender'] = $newGender;
-                    $_SESSION['user']['useEmail'] = $newEmail;
-
-                    // Redirige l'utilisateur vers sa page de profil après la mise à jour
-                    header("Location: ../resources/views/userDetails.php");
-                    exit(); 
+                    echo '<div id="contentContainer">';
+                    echo '<br>';
+                    echo "Veuillez remplir tous les champs.";
+                    echo '<br>';
                 }
+            } else {
+                header("Location: ../../resources/views/myActivities.php");
+                exit();
             }
             ?>
             <br>
-            <a id="pageBefore" href="../../resources/views/userEditDetails.php"><-Page précédente</a>
+            <a id="pageBefore" href="../../resources/views/createActivities.php"><-Page précédente</a>
             </div>  
         </main>
         <footer>

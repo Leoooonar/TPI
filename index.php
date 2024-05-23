@@ -30,7 +30,7 @@ if (isset($_SESSION['user'])) {
                 <nav class="navbar">
                     <ul>
                         <div class="left-content">
-                            <li><h1>LISTE DES ACTIVITES</h1></li>
+                            <a href="/resources/views/activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
                         </div>    
                         <div class="center-content">
                             <li><a href="#"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>

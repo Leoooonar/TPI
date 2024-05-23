@@ -1,8 +1,8 @@
 <?php
 //ETML
 //Auteur: Leonar Dupuis                                            
-//Date: 22.05.2024       
-//Description : Page d'édition des informations de l'utilisateur 
+//Date: 23.05.2024       
+//Description : Page de modification d'une activité (réservé aux enseignants)
 
 session_start();
 include("../../models/database.php");
@@ -18,13 +18,29 @@ if (isset($_SESSION['user'])) {
     exit();
 }
 
+// Récupérer l'ID de l'activité à modifier depuis l'URL
+$activityId = $_GET['id'];
+
+// Récupérer les détails de l'activité depuis la base de données
+$activityDetails = $db->getActivityById($activityId);
+
+// Vérifier si l'activité existe
+if ($activityDetails) {
+    // Récupérer les détails de l'activité
+    $activityTitle = $activityDetails['actTitle'];
+    $activityDescription = $activityDetails['actDescription'];
+    $activityCapacity = $activityDetails['actCapacity'];
+} else {
+    // Gérer le cas où l'activité n'existe pas
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil utilisateur</title>
+    <title>Modificiation d'une activité</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
     <body>
@@ -67,33 +83,24 @@ if (isset($_SESSION['user'])) {
                 </nav>
             </div>    
             <br>
-            <h2 id="secondTitle">Edition des informations</h2>
+            <h2 id="secondTitle">Modifier d'une activité</h2>
             <hr>
             <div class="userContainer">
-                <form action="../../controllers/userDetailsCheck.php" id="details" method="POST">
-                    <label for="username">Pseudonyme:</label>
-                    <input type="text" id="username" name="username" value="<?php echo $user['useNickname']; ?>">
-                    <br>
-                    <label for="firstname">Prénom:</label>
-                    <input type="text" id="firstname" name="firstname" value="<?php echo $user['useFirstname'] ?? ''; ?>">
-                    <br>
-                    <label for="lastname">Nom:</label>
-                    <input type="text" id="lastname" name="lastname" value="<?php echo $user['useLastname'] ?? ''; ?>">
-                    <br>
-                    <label for="email">Adresse e-mail:</label>
-                    <input type="email" id="email" name="email" value="<?php echo $user['useEmail'] ?? ''; ?>">
-                    <br>
-                    <label for="gender">Genre:</label>
-                    <select id="gender" name="gender">
-                        <option value="M" <?php echo ($user['useGender'] == 'M') ? 'selected' : ''; ?>>Masculin</option>
-                        <option value="F" <?php echo ($user['useGender'] == 'F') ? 'selected' : ''; ?>>Féminin</option>
-                        <option value="O" <?php echo ($user['useGender'] == 'O') ? 'selected' : ''; ?>>Autre</option>
-                    </select>
-                    <br>
-                    <br>
-                        <button type="submit">Sauvegarder</button>
-                </form>
+            <form action="../../controllers/activityEditCheck.php" id="details" method="POST">
+                <input type="hidden" name="activityId" value="<?= $activityId ?>">
+                <label for="activity">Nom de l'activité:</label>
+                <input type="text" id="activity" name="activity" value="<?= htmlspecialchars($activityTitle) ?>">
+                <br>
+                <label for="participant">Participants max:</label>
+                <input type="number" id="participant" name="participant" value="<?= $activityCapacity ?>">
+                <br>
+                <label for="description">Description:</label>
+                <textarea name="description" id="desc"><?= htmlspecialchars($activityDescription) ?></textarea>
+                <br>
+                <button type="submit">Modifier</button>
+            </form>
             </div>
+            <br>
         </main>
         <footer>
             <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 

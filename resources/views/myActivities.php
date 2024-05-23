@@ -1,8 +1,8 @@
 <?php
 //ETML
 //Auteur: Leonar Dupuis                                            
-//Date: 22.05.2024       
-//Description : Page d'édition des informations de l'utilisateur 
+//Date: 23.05.2024       
+//Description : Page relatif aux activités de l'utilisateur
 
 session_start();
 include("../../models/database.php");
@@ -18,13 +18,16 @@ if (isset($_SESSION['user'])) {
     exit();
 }
 
+// Récupérer les activités pour l'utilisateur connecté
+$activities = $db->getActivitiesForUser($user['idUser'], $user['useType']);
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil utilisateur</title>
+    <title>Liste de mes activités</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
     <body>
@@ -43,7 +46,7 @@ if (isset($_SESSION['user'])) {
                                 if ($isLoggedIn) {
                                     echo '<li class="nav-item dropdown">';
                                         echo '<div class="active">';
-                                            echo '<h1>MON COMPTE</h1>';
+                                        echo '<h1>MON COMPTE</h1>';
                                         echo '</div>';
                                         echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                         echo '<div class="dropdown-content">';
@@ -67,33 +70,54 @@ if (isset($_SESSION['user'])) {
                 </nav>
             </div>    
             <br>
-            <h2 id="secondTitle">Edition des informations</h2>
+            <h2 id="secondTitle">Liste de mes activités</h2>
             <hr>
-            <div class="userContainer">
-                <form action="../../controllers/userDetailsCheck.php" id="details" method="POST">
-                    <label for="username">Pseudonyme:</label>
-                    <input type="text" id="username" name="username" value="<?php echo $user['useNickname']; ?>">
-                    <br>
-                    <label for="firstname">Prénom:</label>
-                    <input type="text" id="firstname" name="firstname" value="<?php echo $user['useFirstname'] ?? ''; ?>">
-                    <br>
-                    <label for="lastname">Nom:</label>
-                    <input type="text" id="lastname" name="lastname" value="<?php echo $user['useLastname'] ?? ''; ?>">
-                    <br>
-                    <label for="email">Adresse e-mail:</label>
-                    <input type="email" id="email" name="email" value="<?php echo $user['useEmail'] ?? ''; ?>">
-                    <br>
-                    <label for="gender">Genre:</label>
-                    <select id="gender" name="gender">
-                        <option value="M" <?php echo ($user['useGender'] == 'M') ? 'selected' : ''; ?>>Masculin</option>
-                        <option value="F" <?php echo ($user['useGender'] == 'F') ? 'selected' : ''; ?>>Féminin</option>
-                        <option value="O" <?php echo ($user['useGender'] == 'O') ? 'selected' : ''; ?>>Autre</option>
-                    </select>
-                    <br>
-                    <br>
-                        <button type="submit">Sauvegarder</button>
-                </form>
+            <br>
+            <div id="createButton">
+            <?php if ($user['useType'] == 'T'): ?>
+                <a href="createActivities.php"><button>Créer une activité</button></a>
+            <?php endif; ?>
             </div>
+            <br>
+            <?php if (!empty($activities)): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NOM</th>
+                            <?php if ($user['useType'] == 'S'): ?>
+                                <th>ORGANISATEUR</th>
+                            <?php endif; ?>
+                            <th>DESCRIPTION</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($activities as $activity): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($activity['actTitle']) ?></td>
+                                <?php if ($user['useType'] == 'S'): ?>
+                                    <td><?= htmlspecialchars($activity['organizerName']) ?></td>
+                                <?php endif; ?>
+                                <td><?= htmlspecialchars($activity['actDescription']) ?></td>
+                                <td>
+                                    <?php if ($user['useType'] == 'S'): ?>
+                                        <button onclick="window.location.href='details.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
+                                        <button onclick="window.location.href='unsubscribe.php?id=<?= $activity['idActivity'] ?>'">Se désinscrire</button>
+                                    <?php else: ?>
+                                        <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Détails</button>
+                                        <button onclick="window.location.href='activityEdit.php?id=<?= $activity['idActivity'] ?>'">Modifier</button>
+                                        <button class="delete-button" onclick="confirmDelete(<?= $activity['idActivity'] ?>)">Supprimer</button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div id="contentContainer">
+                    <p>Vous n'avez aucune activité pour le moment.</p>
+                </div>
+            <?php endif; ?>
         </main>
         <footer>
             <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 

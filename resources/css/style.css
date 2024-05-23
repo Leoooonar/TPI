@@ -279,7 +279,7 @@ button {
     width: 100%;
     padding: 10px;
     font-size: 14px;
-    background-color: #000; 
+    background-color: #002D2C; 
     color: #fff; 
     border: none;
     cursor: pointer;
@@ -355,6 +355,70 @@ button {
   input#username, input#firstname, input#lastname, input#email, select#gender{
     width: 70px;
   }
+}
+
+/*************************/
+/*        TABLEAU      . */
+/*************************/
+
+table {
+  width: 75%;
+  border-collapse: collapse;
+  margin:auto;
+}
+
+table, th, td {
+  border: 1px solid #ddd;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  background-color: #EDF2EE;
+}
+
+tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+#createButton{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  flex-wrap: wrap;
+  width: 30%;
+  
+}
+
+#desc{
+  height: 100px;
+}
+
+.delete-button{
+  background-color: rgb(173, 55, 55);
+}
+
+.delete-button:hover{
+  background-color: rgba(199, 0, 0, 0.993);
+}
+
+/*************************/
+/*        ACTIVITES      */
+/*************************/
+
+.addUser{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#searchResult{
+  color: green;
+  margin-right: 10px;
 }
 
 /*************************/

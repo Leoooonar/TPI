@@ -1,17 +1,11 @@
 <?php
 //ETML
 //Auteur: Leonar Dupuis                                            
-//Date: 22.05.2024       
-//Description : Page d'édition des informations de l'utilisateur 
+//Date: 23.05.2024       
+//Description : Page de vérification de la modification d'une activité (réservé aux enseignants)
 
 session_start();
-
-// Inclure le fichier database.php
 include("../models/database.php");
-
-// Initialiser le tableau des erreurs
-$errors = array();
-
 $db = new Database();
 
 // Vérifie si l'utilisateur est connecté
@@ -20,18 +14,17 @@ if (isset($_SESSION['user'])) {
     $isLoggedIn = true;
 } else {
     $isLoggedIn = false;
-    header("Location: ./authentification/login.php"); // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
+    header("Location: ../../resources/views/authentification/login.php"); // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     exit();
 }
 
-$user = $_SESSION['user'];
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
+    <title>Vérification création activités</title>
     <link rel="stylesheet" href="../../../resources/css/style.css">
 </head>
     <body>
@@ -59,10 +52,10 @@ $user = $_SESSION['user'];
                                     echo '</li>';
                                 } else {
                                     echo '<li class="nav-item dropdown">';
-                                    echo '<a href="../../resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                                    echo '<a href="../resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
                                     echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                         echo '<div class="dropdown-content">';
-                                        echo '<a href="../../resources/views/authentification/register.php">Inscription</a>'; 
+                                        echo '<a href="../resources/views/authentification/register.php">Inscription</a>'; 
                                         echo '</div>';
                                     echo '</li>';                               
                                 }
@@ -70,50 +63,41 @@ $user = $_SESSION['user'];
                         </div>
                     </ul>
                 </nav>
-            </div> 
+            </div>    
             <?php
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                // Récupérer les données du formulaire soumis
-                $newUsername = $_POST['username'];
-                $newFirstname = $_POST['firstname'];
-                $newLastname = $_POST['lastname'];
-                $newEmail = $_POST['email'];
-                $newGender = $_POST['gender'];
-
-                if (!preg_match("/^[a-zA-Z]*$/", $newFirstname)) {
-                    $errors[] = "Le prénom ne doit contenir que des lettres";
-                }
-
-                if (!preg_match("/^[a-zA-Z]*$/", $newLastname)) {
-                    $errors[] = "Le nom ne doit contenir que des lettres";
-                }
-
-                // Si des erreurs sont détectées, afficher les messages d'erreur
-                if (!empty($errors)) {
-                    foreach ($errors as $error) {
+                // Vérifie si les données du formulaire sont soumises
+                if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                    // Vérifie que tous les champs obligatoires sont remplis
+                    if (empty($_POST["activityId"]) || empty($_POST["activity"]) || empty($_POST["description"])) {
                         echo '<div id="contentContainer">';
                         echo '<br>';
-                        echo "<p>$error</p>";
-                        echo '<br>';
-                    }
-                } else {
-                    // Met à jour les informations de l'utilisateur dans la base de données
-                    $db->updateUserInfo($user['idUser'], $newUsername, $newFirstname, $newLastname, $newEmail, $newGender);
+                        $errorMessage = "Tous les champs sont obligatoires. Veuillez remplir tous les champs.";
+                    } else {
+                        // Récupère les données du formulaire
+                        $activityId = $_POST["activityId"];
+                        $activityTitle = $_POST["activity"];
+                        $activityDescription = $_POST["description"];
+                        $activityCapacity = isset($_POST["participant"]) ? $_POST["participant"] : NULL;
 
-                    $_SESSION['user']['useUsername'] = $newUsername;
-                    $_SESSION['user']['useFirstname'] = $newFirstname;
-                    $_SESSION['user']['useLastname'] = $newLastname;
-                    $_SESSION['user']['useGender'] = $newGender;
-                    $_SESSION['user']['useEmail'] = $newEmail;
+                        // Effectue la mise à jour de l'activité dans la base de données
+                        $result = $db->updateActivity($activityId, $activityTitle, $activityDescription, $activityCapacity);
 
-                    // Redirige l'utilisateur vers sa page de profil après la mise à jour
-                    header("Location: ../resources/views/userDetails.php");
-                    exit(); 
+                        if ($result) {
+                            // Redirige vers une page de confirmation
+                            header("Location: ../resources/views/myActivities.php");
+                            exit();
+                        } else {
+                            // Gère le cas où la mise à jour a échoué
+                            // Par exemple, affiche un message d'erreur
+                            echo '<div id="contentContainer">';
+                            echo '<br>';
+                            $errorMessage = "La mise à jour de l'activité a échoué. Veuillez réessayer.";
+                        }
+                    }        
                 }
-            }
             ?>
             <br>
-            <a id="pageBefore" href="../../resources/views/userEditDetails.php"><-Page précédente</a>
+            <a id="pageBefore" href="../../resources/views/createActivities.php"><-Page précédente</a>
             </div>  
         </main>
         <footer>

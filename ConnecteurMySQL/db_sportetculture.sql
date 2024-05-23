@@ -3,7 +3,7 @@
 -- Date : 17.05.2024
 -- Description : Script SQL à importer dans PhpMyAdmin pour les créations des tables, de 3 enseignants et 5 élèves.
 -- 
--- Version : 1.0.1
+-- Version : 1.1.0
 -- Date : 21.05.2024
 -- Description : Supression de la table t_student et t_teacher pour en créer une liant les deux: t_user
 

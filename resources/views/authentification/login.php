@@ -28,7 +28,7 @@ if (isset($_SESSION['user'])) {
                 <nav class="navbar">
                     <ul>
                         <div class="left-content">
-                            <li><h1>LISTE DES ACTIVITES</h1></li>
+                            <a href="../activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
                         </div>    
                         <div class="center-content">
                             <li><a href="../../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
@@ -37,12 +37,14 @@ if (isset($_SESSION['user'])) {
                             <?php
                                 if ($isLoggedIn) {
                                     echo '<li class="nav-item dropdown">';
-                                    echo '<h1>MON COMPTE</h1>';
+                                    echo '<div class="active">';
+                                        echo '<h1>MON COMPTE</h1>';
+                                    echo '</div>';
                                     echo '<a href="javascript:void(0)" class="dropbtn"></a>';
                                         echo '<div class="dropdown-content">';
-                                        echo '<a href="./resources/views/userDetails.php">Détail du compte</a>';
-                                        echo '<a href="./resources/views/myActivities.php">Mes activités</a>';
-                                        echo '<a href="./resources/views/logout.php">Déconnexion</a>';
+                                        echo '<a href="../userDetails.php">Détail du compte</a>';
+                                        echo '<a href="../myActivities.php">Mes activités</a>';
+                                        echo '<a href="../logout.php">Déconnexion</a>';
                                         echo '</div>';
                                     echo '</li>';
                                 } else {
