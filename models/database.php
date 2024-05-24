@@ -14,7 +14,12 @@
 //
 // Version : 4.0.0
 // Date : 23.05.2024
-// Description : Ajout de la méthode UpdateUserInfo
+// Description : Ajout des méthodes createActivity, getActivityById, updateActivity, deleteActivity et getActivitiesForUser
+//
+// Version : 5.0.0
+// Date : 24.05.2024
+// Description : Ajout des méthodes searchUsers, getParticipantsForActivity, getActivityOrganizer et removeParticipantFromActivity
+
 
 class Database {
     private $host = "host.docker.internal"; 
@@ -117,86 +122,94 @@ class Database {
         }
     }
 
-    //Méthode pour faire la mise à jour des données utilisateur
-    public function updateUserInfo($userId, $newNickname, $newFirstname, $newLastname, $newEmail, $newGender) {
-        try {
-            $query = "UPDATE t_user 
-                      SET useNickname = :username,
-                          useFirstname = :firstname, 
-                          useLastname = :lastname, 
-                          useEmail = :email, 
-                          useGender = :gender 
-                      WHERE idUser = :userId";
-    
-            $params = array(
-                ':username' => $newNickname,
-                ':firstname' => $newFirstname,
-                ':lastname' => $newLastname,
-                ':email' => $newEmail,
-                ':gender' => $newGender,
-                ':userId' => $userId
-            );
-    
-            $result = $this->queryPrepare($query, $params);
-    
-            if ($result === false) {
-                throw new Exception("Erreur lors de la mise à jour des informations de l'utilisateur.");
-            }
-    
-            return true; // Retourne true si la mise à jour est réussie
-        } catch(Exception $e) {
-            // Gère l'erreur
-            echo "Error: " . $e->getMessage();
-            return false; // Retourne false en cas d'erreur
+//Méthode pour faire la mise à jour des données utilisateur
+public function updateUserInfo($userId, $newNickname, $newFirstname, 
+$newLastname, $newEmail, $newGender) 
+{
+    try {
+        $query = "UPDATE t_user 
+                    SET useNickname = :username,
+                        useFirstname = :firstname, 
+                        useLastname = :lastname, 
+                        useEmail = :email, 
+                        useGender = :gender 
+                    WHERE idUser = :userId";
+
+        $params = array(
+            ':username' => $newNickname,
+            ':firstname' => $newFirstname,
+            ':lastname' => $newLastname,
+            ':email' => $newEmail,
+            ':gender' => $newGender,
+            ':userId' => $userId
+        );
+
+        $result = $this->queryPrepare($query, $params);
+
+        if ($result === false) {
+            throw new Exception("Erreur lors de la mise à jour 
+            des informations de l'utilisateur.");
         }
+
+        return true; // Retourne true si la mise à jour est réussie
+    } catch(Exception $e) {
+        // Gère l'erreur
+        echo "Error: " . $e->getMessage();
+        return false; // Retourne false en cas d'erreur
     }
+}
 
     /////////////////////////////////////////////////////////////////////
     //                         GESTION ACTIVITES                       //
     /////////////////////////////////////////////////////////////////////
     
-    //Récupère les activités relatif à l'utilisateur selon son type (enseignant ou élève)
-    public function getActivitiesForUser($userId, $userType) {
-        if ($userType == 'S') { // Élève
-            $sql = "SELECT a.idActivity, a.actTitle, a.actDescription, u.useLastname AS organizerName 
-                    FROM t_activity a
-                    JOIN t_participer p ON a.idActivity = p.fkActivity
-                    JOIN t_user u ON u.idUser = (SELECT fkUser FROM t_participer WHERE fkActivity = a.idActivity LIMIT 1)
-                    WHERE p.fkUser = ?";
-            $params = [$userId];
-        } else if ($userType == 'T') { // Enseignant
-            $sql = "SELECT a.idActivity, a.actTitle, a.actDescription 
-                    FROM t_activity a";
-            $params = [];
-        }
-
-        $stmt = $this->queryPrepare($sql, $params);
-        if ($stmt) {
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        }
-        return [];
+//Récupère les activités en lien avec l'utilisateur selon son type 
+public function getActivitiesForUser($userId, $userType) {
+    if ($userType == 'S') { // Élève
+        $sql = "SELECT a.idActivity, a.actTitle, a.actDescription, 
+        u.useLastname AS organizerName 
+                FROM t_activity a
+                JOIN t_participer p ON a.idActivity = p.fkActivity
+                JOIN t_user u ON u.idUser = (SELECT fkUser 
+                FROM t_participer 
+                WHERE fkActivity = a.idActivity LIMIT 1)
+                WHERE p.fkUser = ?";
+        $params = [$userId];
+    } else if ($userType == 'T') { // Enseignant
+        $sql = "SELECT a.idActivity, a.actTitle, a.actDescription 
+                FROM t_activity a";
+        $params = [];
     }
 
-    // Crée une nouvelle activité
-    public function createActivity($title, $description, $capacity, $userId) {
-        $sql = "INSERT INTO t_activity (actTitle, actDescription, actCapacity) VALUES (?, ?, ?)";
-        $params = [$title, $description, $capacity];
-
-        $stmt = $this->queryPrepare($sql, $params);
-        if ($stmt) {
-            $activityId = $this->conn->lastInsertId();
-
-            // Associer l'activité à l'utilisateur qui l'a créée
-            $sqlLink = "INSERT INTO t_participer (fkUser, fkActivity) VALUES (?, ?)";
-            $paramsLink = [$userId, $activityId];
-            $stmtLink = $this->queryPrepare($sqlLink, $paramsLink);
-
-            if ($stmtLink) {
-                return $activityId;
-            }
-        }
-        return false;
+    $stmt = $this->queryPrepare($sql, $params);
+    if ($stmt) {
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    return [];
+}
+
+// Crée une nouvelle activité
+public function createActivity($title, $description, $capacity, $userId) {
+    $sql = "INSERT INTO t_activity (actTitle, actDescription, actCapacity) 
+    VALUES (?, ?, ?)";
+    $params = [$title, $description, $capacity];
+
+    $stmt = $this->queryPrepare($sql, $params);
+    if ($stmt) {
+        $activityId = $this->conn->lastInsertId();
+
+        // Associer l'activité à l'utilisateur qui l'a créée
+        $sqlLink = "INSERT INTO t_participer (fkUser, fkActivity) 
+        VALUES (?, ?)";
+        $paramsLink = [$userId, $activityId];
+        $stmtLink = $this->queryPrepare($sqlLink, $paramsLink);
+
+        if ($stmtLink) {
+            return $activityId;
+        }
+    }
+    return false;
+}
 
     // Supprime une activité et les participations associées
     public function deleteActivity($activityId) {
@@ -292,11 +305,42 @@ class Database {
         return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
     }    
 
-    //Permet aux enseignants de supprimer les pariticpants d'une activité
+    // Recherche l'organisateur de l'activité
+    public function getActivityOrganizer($activityId) {
+        $sql = "SELECT u.useFirstname, u.useLastname 
+                FROM t_user u
+                JOIN t_participer p ON u.idUser = p.fkUser
+                WHERE p.fkActivity = ? AND u.useType = 'T'";
+        $params = [$activityId];
+        $stmt = $this->queryPrepare($sql, $params);
+        
+        // Vérifie si un enseignant a été trouvé
+        if ($stmt && $stmt->rowCount() > 0) {
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } else {
+            return null; // Aucun enseignant trouvé
+        }
+    }
+    
+    // Méthode pour supprimer un participant d'une activité
     public function removeParticipantFromActivity($userId, $activityId) {
-        $query = "DELETE FROM t_participer WHERE fkUser = ? AND fkActivity = ?";
-        $stmt = $this->queryPrepare($query, array($userId, $activityId));
-        return $stmt->rowCount() > 0;
+        try {
+            // Requête SQL pour supprimer le participant de l'activité
+            $query = "DELETE FROM t_participer WHERE fkUser = :userId AND fkActivity = :activityId";
+
+            // Paramètres de la requête
+            $params = array(':userId' => $userId, ':activityId' => $activityId);
+
+            // Exécute la requête avec la méthode queryPrepare
+            $stmt = $this->queryPrepare($query, $params);
+
+            // Retourne true si la suppression a réussi
+            return $stmt !== false;
+        } catch (PDOException $e) {
+            // En cas d'erreur, affiche l'erreur et retourne false
+            echo "Erreur : " . $e->getMessage();
+            return false;
+        }
     }
 }
 ?>

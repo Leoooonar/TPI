@@ -3,6 +3,10 @@
 //Auteur: Leonar Dupuis                                            
 //Date: 23.05.2024       
 //Description : Page détails d'une activité
+//
+// Version : 2.0.0
+// Date : 24.05.2024
+// Description : Rechercher et ajouter un utilisateur comme participant (uniquement enseignant)
 
 session_start();
 include("../../models/database.php");
@@ -54,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
     // Rafraîchir la liste des participants
     $participants = $db->getParticipantsForActivity($activityId);
 }
+
 
 ?>
 <!DOCTYPE html>
@@ -119,11 +124,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                     echo '<div class="infoContainer">';
                         echo '<p><strong>Nom:</strong> ' . $activityTitle . '</p>';
                         echo '<br>';
-                        echo '<p><strong>Organisateur:</strong> ' . $user['useFirstname'] . ' ' . $user['useLastname'] . '</p>';
+                        // Infos de l'organisateur
+                        $organizer = $db->getActivityOrganizer($activityId);
+                        if ($organizer) {
+                            echo '<p><strong>Organisateur:</strong> ' . htmlspecialchars($organizer['useFirstname']) . ' ' . htmlspecialchars($organizer['useLastname']) . '</p>';
+                        } else {
+                            echo '<p><strong>Organisateur:</strong> Inconnu</p>';
+                        }
                         echo '<br>';
                         echo '<p><strong>Max de participants:</strong> ' . $activityCapacity . '</p>';
                         echo '<br>';
-                        echo '<p><strong>Statut:</strong> ' . $user['useType'] . '</p>';
+                        echo '<p><strong>Statut:</strong> ' . '</p>';
                         echo '<br>';
                         echo '<p><strong>Description:</strong> ' . $activityDescription . '</p>';
                     echo '</div>';
@@ -133,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
 
             <h2 id="secondTitle">Liste des participants</h2>
             <?php if ($user['useType'] == 'T'): ?>
+                <!-- Formulaire de recherche et d'ajout de participants -->
                 <form method="POST">
                     <input type="text" name="searchTerm" placeholder="Rechercher un utilisateur">
                     <br>
@@ -140,14 +152,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                     <br>
                 </form>
                 <?php if (!empty($searchResults)): ?>
+                    <!-- Résultats de la recherche -->
                     <ul>
                         <?php foreach ($searchResults as $result): ?>
                             <li class="addUser">
-                            <div id="searchResult">
-                                <?= htmlspecialchars($result['useFirstname'] . ' ' . $result['useLastname'] . ' (' . $result['useNickname'] . ')') ?>
+                                <div id="searchResult">
+                                    <?= htmlspecialchars($result['useFirstname'] . ' ' . $result['useLastname'] . ' (' . $result['useNickname'] . ')') ?>
                                 </div>
                                 <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="userId" value="<?= htmlspecialchars($result['idUser']) ?>">
+                                    <input type="hidden" name="userId" value="<?= htmlspecialchars($result['idUser']) ?>">
                                     <button type="submit">Ajouter</button>
                                 </form>
                             </li>
@@ -157,12 +170,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                 <?php endif; ?>
             <?php endif; ?>
             <?php if (!empty($participants)): ?>
+                <!-- Liste des participants -->
                 <table>
                     <thead>
                         <tr>
                             <th>Prénom</th>
                             <th>Nom</th>
-                            <th>Action</th>
+                            <?php if ($user['useType'] == 'T'): ?> <!-- Affiche la colonne Action uniquement pour les enseignants -->
+                                <th>Action</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -170,12 +186,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                             <tr>
                                 <td><?= htmlspecialchars($participant['useFirstname']) ?></td>
                                 <td><?= htmlspecialchars($participant['useLastname']) ?></td>
-                                <td>
-                                    <form method="POST" style="display:inline;">
-                                        <input type="hidden" name="removeUserId" value="<?= htmlspecialchars($participant['idUser']) ?>">
-                                        <button type="submit">Supprimer</button>
-                                    </form>
-                                </td>
+                                <?php if ($user['useType'] == 'T'): ?> <!-- Affiche les boutons Supprimer uniquement pour les enseignants -->
+                                    <td>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="removeUserId" value="<?= htmlspecialchars($participant['idUser']) ?>">
+                                            <button type="submit">Supprimer</button>
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

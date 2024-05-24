@@ -98,7 +98,12 @@ $user = $_SESSION['user'];
                     }
                 } else {
                     // Met à jour les informations de l'utilisateur dans la base de données
-                    $db->updateUserInfo($user['idUser'], $newUsername, $newFirstname, $newLastname, $newEmail, $newGender);
+                    $db->updateUserInfo($user['idUser'], 
+                    $newUsername, 
+                    $newFirstname, 
+                    $newLastname, 
+                    $newEmail, 
+                    $newGender);
 
                     $_SESSION['user']['useUsername'] = $newUsername;
                     $_SESSION['user']['useFirstname'] = $newFirstname;

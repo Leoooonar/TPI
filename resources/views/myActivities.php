@@ -21,6 +21,19 @@ if (isset($_SESSION['user'])) {
 // Récupérer les activités pour l'utilisateur connecté
 $activities = $db->getActivitiesForUser($user['idUser'], $user['useType']);
 
+// Récupérer les organisateurs pour chaque activité
+foreach ($activities as &$activity) {
+    $organizer = $db->getActivityOrganizer($activity['idActivity']);
+    if ($organizer) {
+        $activity['organizerFirstname'] = $organizer['useFirstname'] ?? '';
+        $activity['organizerName'] = $organizer['useLastname'] ?? '';
+    } else {
+        // Si aucun organisateur n'est trouvé, définir les valeurs par défaut
+        $activity['organizerFirstname'] = '';
+        $activity['organizerName'] = '';
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -96,15 +109,18 @@ $activities = $db->getActivitiesForUser($user['idUser'], $user['useType']);
                             <tr>
                                 <td><?= htmlspecialchars($activity['actTitle']) ?></td>
                                 <?php if ($user['useType'] == 'S'): ?>
-                                    <td><?= htmlspecialchars($activity['organizerName']) ?></td>
+                                    <td><?= htmlspecialchars($activity['organizerName']) ?> <?= htmlspecialchars($activity['organizerFirstname']) ?></td>
                                 <?php endif; ?>
                                 <td><?= htmlspecialchars($activity['actDescription']) ?></td>
                                 <td>
                                     <?php if ($user['useType'] == 'S'): ?>
-                                        <button onclick="window.location.href='details.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
-                                        <button onclick="window.location.href='unsubscribe.php?id=<?= $activity['idActivity'] ?>'">Se désinscrire</button>
-                                    <?php else: ?>
-                                        <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Détails</button>
+                                        <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
+                                        <form method="POST" action="../../controllers/unsubscribe.php">
+                                            <input type="hidden" name="activityId" value="<?= $activity['idActivity'] ?>">
+                                            <button type="submit" class="delete-button">Se désinscrire</button>
+                                        </form>                                   
+                                        <?php else: ?>
+                                        <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
                                         <button onclick="window.location.href='activityEdit.php?id=<?= $activity['idActivity'] ?>'">Modifier</button>
                                         <button class="delete-button" onclick="confirmDelete(<?= $activity['idActivity'] ?>)">Supprimer</button>
                                     <?php endif; ?>
@@ -113,10 +129,24 @@ $activities = $db->getActivitiesForUser($user['idUser'], $user['useType']);
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-            <?php else: ?>
+                <?php else: ?>
                 <div id="contentContainer">
+                    <div id="searchResult">
+                    <?php
+                    if (isset($_GET['unsubscribe']) && $_GET['unsubscribe'] === 'success') {
+                        echo '<div class="success-message">Vous vous êtes désinscrit avec succès de cette activité.</div>';
+                        echo '<br>';
+                        echo '</div>'; 
+                    } elseif ($_GET['unsubscribe'] === 'error') {
+                        echo 'Une <span style="color:red;">erreur</span> est survenue lors de votre désinscription.';
+                        echo '<br>';
+                    } elseif ($_GET['unsubscribe'] === 'missing') {
+                        echo 'L\'identifiant de l\'activité est <span style="color:red;">manquant</span>.';
+                        echo '<br>';
+                    }
+                    ?>
+                    </div>
                     <p>Vous n'avez aucune activité pour le moment.</p>
-                </div>
             <?php endif; ?>
         </main>
         <footer>

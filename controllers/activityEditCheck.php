@@ -68,10 +68,11 @@ if (isset($_SESSION['user'])) {
                 // Vérifie si les données du formulaire sont soumises
                 if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     // Vérifie que tous les champs obligatoires sont remplis
-                    if (empty($_POST["activityId"]) || empty($_POST["activity"]) || empty($_POST["description"])) {
+                    if (empty($_POST["activityId"]) || empty($_POST["activity"]) || empty($_POST["description"])  || empty($_POST["participant"])) {
                         echo '<div id="contentContainer">';
                         echo '<br>';
-                        $errorMessage = "Tous les champs sont obligatoires. Veuillez remplir tous les champs.";
+                        echo "Tous les champs sont obligatoires. Veuillez remplir tous les champs.";
+                        echo '<br>';
                     } else {
                         // Récupère les données du formulaire
                         $activityId = $_POST["activityId"];
@@ -91,13 +92,13 @@ if (isset($_SESSION['user'])) {
                             // Par exemple, affiche un message d'erreur
                             echo '<div id="contentContainer">';
                             echo '<br>';
-                            $errorMessage = "La mise à jour de l'activité a échoué. Veuillez réessayer.";
+                            echo "La mise à jour de l'activité a échoué. Veuillez réessayer.";
                         }
                     }        
                 }
             ?>
             <br>
-            <a id="pageBefore" href="../../resources/views/createActivities.php"><-Page précédente</a>
+            <a id="pageBefore" href="../../resources/views/myActivities.php"><-Page précédente</a>
             </div>  
         </main>
         <footer>
