@@ -398,6 +398,11 @@ tr:nth-child(even) {
   height: 100px;
 }
 
+#errormsg{
+  color:red;
+  margin: auto;
+}
+
 .delete-button{
   background-color: rgb(173, 55, 55);
 }
@@ -405,6 +410,15 @@ tr:nth-child(even) {
 .delete-button:hover{
   background-color: rgba(199, 0, 0, 0.993);
 }
+
+.add-button{
+  background-color: rgba(20, 105, 2, 0.993);
+}
+
+.add-button:hover{
+  background-color: rgba(26, 156, 0, 0.993);
+}
+
 
 /*************************/
 /*        ACTIVITES      */

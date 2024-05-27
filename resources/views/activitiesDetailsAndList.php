@@ -1,12 +1,16 @@
 <?php
-//ETML
-//Auteur: Leonar Dupuis                                            
-//Date: 23.05.2024       
-//Description : Page détails d'une activité
+// ETML
+// Auteur: Leonar Dupuis                                            
+// Date: 23.05.2024       
+// Description : Page détails d'une activité
 //
 // Version : 2.0.0
 // Date : 24.05.2024
 // Description : Rechercher et ajouter un utilisateur comme participant (uniquement enseignant)
+//
+// Version : 3.0.0
+// Date : 27.05.2024
+// Description : Ajout de la fonctionnalité checkActivityCapacity
 
 session_start();
 include("../../models/database.php");
@@ -46,9 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['searchTerm'])) {
 // Traitement de l'ajout d'un participant
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['userId'])) {
     $userId = $_POST['userId'];
-    $db->addParticipantToActivity($userId, $activityId);
-    // Rafraîchir la liste des participants
-    $participants = $db->getParticipantsForActivity($activityId);
+    if ($db->checkActivityCapacity($activityId)) {
+        $db->addParticipantToActivity($userId, $activityId);
+        // Rafraîchi la liste des participants
+        $participants = $db->getParticipantsForActivity($activityId);
+    } else {
+        $error = 'La capacité maximale de cette activité est atteinte. Vous ne pouvez pas ajouter plus de participants.';
+        }
 }
 
 // Traitement de la suppression d'un participant
@@ -59,7 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
     $participants = $db->getParticipantsForActivity($activityId);
 }
 
-
+// Vérifie la capacité pour définir le statut
+$capacityCheck = $db->checkActivityCapacity($activityId);
+if ($capacityCheck) {
+    $activityStatus = '<span style="color: green;">DISPONIBLE</span>';
+} else {
+    $activityStatus = '<span style="color: red;">INDISPONIBLE</span>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -69,55 +83,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
     <title>Détails de l'activité</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-    <body>
-        <main>
-            <div class="headContainer">
-                <nav class="navbar">
-                    <ul>
-                        <div class="left-content">
-                            <div class="active">
-                                <a href="activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
-                            </div>
-                        </div>    
-                        <div class="center-content">
-                            <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
+<body>
+    <main>
+        <div class="headContainer">
+            <nav class="navbar">
+                <ul>
+                    <div class="left-content">
+                        <div class="active">
+                            <a href="activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
                         </div>
-                        <div class="right-content">
-                            <?php
-                                if ($isLoggedIn) {
-                                    echo '<li class="nav-item dropdown">';
-                                        echo '<h1>MON COMPTE</h1>';
-                                        echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                        echo '<div class="dropdown-content">';
-                                        echo '<a href="userDetails.php">Détails du compte</a>';
-                                        echo '<a href="myActivities.php">Mes activités</a>';
-                                        echo '<a href="logout.php">Déconnexion</a>';
-                                        echo '</div>';
-                                    echo '</li>';
-                                } else {
-                                    echo '<li class="nav-item dropdown">';
-                                    echo '<a href="./authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                    </div>    
+                    <div class="center-content">
+                        <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
+                    </div>
+                    <div class="right-content">
+                        <?php
+                            if ($isLoggedIn) {
+                                echo '<li class="nav-item dropdown">';
+                                    echo '<h1>MON COMPTE</h1>';
                                     echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                        echo '<div class="dropdown-content">';
-                                        echo '<a href="./authentification/register.php">Inscription</a>'; 
-                                        echo '</div>';
-                                    echo '</li>';
-                                }
-                            ?>
-                        </div>
-                    </ul>
-                </nav>
-            </div>    
-            <br>
-            <h2 id="secondTitle">Détails de l'activité</h2>
-            <hr>
-            <br>
-            <div id="contentContainer">
-                <div id="textBlock">
-                    <p id="secondParagraph">
-                    Cliquez sur le nom d’un enseignant pour consulter les activités qu’il organise et
-                    sur celui d’un élève pour découvrir celles auxquelles il participe !
-                    </p>
+                                    echo '<div class="dropdown-content">';
+                                    echo '<a href="userDetails.php">Détails du compte</a>';
+                                    echo '<a href="myActivities.php">Mes activités</a>';
+                                    echo '<a href="logout.php">Déconnexion</a>';
+                                    echo '</div>';
+                                echo '</li>';
+                            } else {
+                                echo '<li class="nav-item dropdown">';
+                                echo '<a href="./authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                                echo '<a href="javascript:void(0)" class="dropbtn"></a>';
+                                    echo '<div class="dropdown-content">';
+                                    echo '<a href="./authentification/register.php">Inscription</a>'; 
+                                    echo '</div>';
+                                echo '</li>';
+                            }
+                        ?>
+                    </div>
+                </ul>
+            </nav>
+        </div>    
+        <br>
+        <h2 id="secondTitle">Détails de l'activité</h2>
+        <hr>
+        <br>
+        <div id="contentContainer">
+            <div id="textBlock">
+                <p id="secondParagraph">
+                Cliquez sur le nom d’un enseignant pour consulter les activités qu’il organise et
+                sur celui d’un élève pour découvrir celles auxquelles il participe !
+                </p>
             </div>
             <?php
                 if ($isLoggedIn) {
@@ -134,14 +148,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                         echo '<br>';
                         echo '<p><strong>Max de participants:</strong> ' . $activityCapacity . '</p>';
                         echo '<br>';
-                        echo '<p><strong>Statut:</strong> ' . '</p>';
+                        echo '<p><strong>Statut: </strong>';
+                        echo  $activityStatus;
+                        echo '<br>';
                         echo '<br>';
                         echo '<p><strong>Description:</strong> ' . $activityDescription . '</p>';
                     echo '</div>';
                 }
-            ?> 
+            ?>
             <br>
-
+            <?php if (isset($error)): ?>
+                <div id="errormsg">
+                <p>Erreur.</p>
+                <br>
+                </div>
+                    <?= htmlspecialchars($error) ?>
+                <br>
+            <?php endif; ?>
             <h2 id="secondTitle">Liste des participants</h2>
             <?php if ($user['useType'] == 'T'): ?>
                 <!-- Formulaire de recherche et d'ajout de participants -->
@@ -176,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                         <tr>
                             <th>Prénom</th>
                             <th>Nom</th>
-                            <?php if ($user['useType'] == 'T'): ?> <!-- Affiche la colonne Action uniquement pour les enseignants -->
+                            <?php if ($user['useType'] == 'T'): ?> 
                                 <th>Action</th>
                             <?php endif; ?>
                         </tr>
@@ -186,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['removeUserId'])) {
                             <tr>
                                 <td><?= htmlspecialchars($participant['useFirstname']) ?></td>
                                 <td><?= htmlspecialchars($participant['useLastname']) ?></td>
-                                <?php if ($user['useType'] == 'T'): ?> <!-- Affiche les boutons Supprimer uniquement pour les enseignants -->
+                                <?php if ($user['useType'] == 'T'): ?> 
                                     <td>
                                         <form method="POST" style="display:inline;">
                                             <input type="hidden" name="removeUserId" value="<?= htmlspecialchars($participant['idUser']) ?>">

@@ -3,6 +3,10 @@
 //Auteur: Leonar Dupuis                                            
 //Date: 23.05.2024       
 //Description : Page relatif aux activités de l'utilisateur
+//
+// Version : 1.0.1
+// Date : 27.05.2024
+// Description : Optimisation méthode getActivitesForUser (1 paramètre en -), + correction bug qui répétion activité (ajout d'un unset)
 
 session_start();
 include("../../models/database.php");
@@ -19,7 +23,7 @@ if (isset($_SESSION['user'])) {
 }
 
 // Récupérer les activités pour l'utilisateur connecté
-$activities = $db->getActivitiesForUser($user['idUser'], $user['useType']);
+$activities = $db->getActivitiesForUser($user['idUser']);
 
 // Récupérer les organisateurs pour chaque activité
 foreach ($activities as &$activity) {
@@ -28,11 +32,11 @@ foreach ($activities as &$activity) {
         $activity['organizerFirstname'] = $organizer['useFirstname'] ?? '';
         $activity['organizerName'] = $organizer['useLastname'] ?? '';
     } else {
-        // Si aucun organisateur n'est trouvé, définir les valeurs par défaut
         $activity['organizerFirstname'] = '';
         $activity['organizerName'] = '';
     }
 }
+unset($activity); // Casse la référence avec le dernier élément
 
 ?>
 <!DOCTYPE html>
@@ -43,115 +47,111 @@ foreach ($activities as &$activity) {
     <title>Liste de mes activités</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-    <body>
-        <main>
-            <div class="headContainer">
-                <nav class="navbar">
-                    <ul>
-                        <div class="left-content">
-                            <a href="activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
-                        </div>    
-                        <div class="center-content">
-                            <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
-                        </div>
-                        <div class="right-content">
-                            <?php
-                                if ($isLoggedIn) {
-                                    echo '<li class="nav-item dropdown">';
-                                        echo '<div class="active">';
-                                        echo '<h1>MON COMPTE</h1>';
-                                        echo '</div>';
-                                        echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                        echo '<div class="dropdown-content">';
-                                        echo '<a href="userDetails.php">Détails du compte</a>';
-                                        echo '<a href="myActivities.php">Mes activités</a>';
-                                        echo '<a href="logout.php">Déconnexion</a>';
-                                        echo '</div>';
-                                    echo '</li>';
-                                } else {
-                                    echo '<li class="nav-item dropdown">';
-                                    echo '<a href="./resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
-                                    echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                        echo '<div class="dropdown-content">';
-                                        echo '<a href="./resources/views/authentification/register.php">Inscription</a>'; 
-                                        echo '</div>';
-                                    echo '</li>';
-                                }
-                            ?>
-                        </div>
-                    </ul>
-                </nav>
-            </div>    
-            <br>
-            <h2 id="secondTitle">Liste de mes activités</h2>
-            <hr>
-            <br>
-            <div id="createButton">
+<body>
+    <main>
+        <div class="headContainer">
+            <nav class="navbar">
+                <ul>
+                    <div class="left-content">
+                        <a href="activitiesList.php"><li><h1>LISTE DES ACTIVITES</h1></li></a>
+                    </div>
+                    <div class="center-content">
+                        <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
+                    </div>
+                    <div class="right-content">
+                        <?php if ($isLoggedIn): ?>
+                            <li class="nav-item dropdown">
+                                <div class="active">
+                                    <h1>MON COMPTE</h1>
+                                </div>
+                                <a href="javascript:void(0)" class="dropbtn"></a>
+                                <div class="dropdown-content">
+                                    <a href="userDetails.php">Détails du compte</a>
+                                    <a href="myActivities.php">Mes activités</a>
+                                    <a href="logout.php">Déconnexion</a>
+                                </div>
+                            </li>
+                        <?php else: ?>
+                            <li class="nav-item dropdown">
+                                <a href="./resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>
+                                <a href="javascript:void(0)" class="dropbtn"></a>
+                                <div class="dropdown-content">
+                                    <a href="./resources/views/authentification/register.php">Inscription</a>
+                                </div>
+                            </li>
+                        <?php endif; ?>
+                    </div>
+                </ul>
+            </nav>
+        </div>
+        <br>
+        <h2 id="secondTitle">Liste de mes activités</h2>
+        <hr>
+        <br>
+        <div id="createButton">
             <?php if ($user['useType'] == 'T'): ?>
                 <a href="createActivities.php"><button>Créer une activité</button></a>
             <?php endif; ?>
-            </div>
-            <br>
-            <?php if (!empty($activities)): ?>
-                <table>
-                    <thead>
+        </div>
+        <br>
+        <?php if (!empty($activities)): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>NOM</th>
+                        <?php if ($user['useType'] == 'S'): ?>
+                            <th>ORGANISATEUR</th>
+                        <?php endif; ?>
+                        <th>DESCRIPTION</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($activities as $activity): ?>
                         <tr>
-                            <th>NOM</th>
+                            <td><?= htmlspecialchars($activity['actTitle']) ?></td>
                             <?php if ($user['useType'] == 'S'): ?>
-                                <th>ORGANISATEUR</th>
+                                <td><?= htmlspecialchars($activity['organizerName']) ?> <?= htmlspecialchars($activity['organizerFirstname']) ?></td>
                             <?php endif; ?>
-                            <th>DESCRIPTION</th>
-                            <th>ACTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($activities as $activity): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($activity['actTitle']) ?></td>
+                            <td><?= htmlspecialchars($activity['actDescription']) ?></td>
+                            <td>
                                 <?php if ($user['useType'] == 'S'): ?>
-                                    <td><?= htmlspecialchars($activity['organizerName']) ?> <?= htmlspecialchars($activity['organizerFirstname']) ?></td>
+                                    <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
+                                    <form method="POST" action="../../controllers/unsubscribe.php">
+                                        <input type="hidden" name="activityId" value="<?= $activity['idActivity'] ?>">
+                                        <button type="submit" class="delete-button">Se désinscrire</button>
+                                    </form>
+                                <?php else: ?>
+                                    <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
+                                    <button onclick="window.location.href='activityEdit.php?id=<?= $activity['idActivity'] ?>'">Modifier</button>
+                                    <button class="delete-button" onclick="confirmDelete(<?= $activity['idActivity'] ?>)">Supprimer</button>
                                 <?php endif; ?>
-                                <td><?= htmlspecialchars($activity['actDescription']) ?></td>
-                                <td>
-                                    <?php if ($user['useType'] == 'S'): ?>
-                                        <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
-                                        <form method="POST" action="../../controllers/unsubscribe.php">
-                                            <input type="hidden" name="activityId" value="<?= $activity['idActivity'] ?>">
-                                            <button type="submit" class="delete-button">Se désinscrire</button>
-                                        </form>                                   
-                                        <?php else: ?>
-                                        <button onclick="window.location.href='activitiesDetailsAndList.php?id=<?= $activity['idActivity'] ?>'">Consulter</button>
-                                        <button onclick="window.location.href='activityEdit.php?id=<?= $activity['idActivity'] ?>'">Modifier</button>
-                                        <button class="delete-button" onclick="confirmDelete(<?= $activity['idActivity'] ?>)">Supprimer</button>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-                <?php else: ?>
-                <div id="contentContainer">
-                    <div id="searchResult">
-                    <?php
-                    if (isset($_GET['unsubscribe']) && $_GET['unsubscribe'] === 'success') {
-                        echo '<div class="success-message">Vous vous êtes désinscrit avec succès de cette activité.</div>';
-                        echo '<br>';
-                        echo '</div>'; 
-                    } elseif ($_GET['unsubscribe'] === 'error') {
-                        echo 'Une <span style="color:red;">erreur</span> est survenue lors de votre désinscription.';
-                        echo '<br>';
-                    } elseif ($_GET['unsubscribe'] === 'missing') {
-                        echo 'L\'identifiant de l\'activité est <span style="color:red;">manquant</span>.';
-                        echo '<br>';
-                    }
-                    ?>
-                    </div>
-                    <p>Vous n'avez aucune activité pour le moment.</p>
-            <?php endif; ?>
-        </main>
-        <footer>
-            <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 
-        </footer>
-        <script src="../js/script.js"></script>
-    </body>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div id="contentContainer">
+                <div id="searchResult">
+                    <?php if (isset($_GET['unsubscribe']) && $_GET['unsubscribe'] === 'success'): ?>
+                        <div class="success-message">Vous vous êtes désinscrit avec succès de cette activité.</div>
+                        <br>
+                    <?php elseif ($_GET['unsubscribe'] === 'error'): ?>
+                        <span style="color:red;">Une erreur est survenue lors de votre désinscription.</span>
+                        <br>
+                    <?php elseif ($_GET['unsubscribe'] === 'missing'): ?>
+                        <span style="color:red;">L'identifiant de l'activité est manquant.</span>
+                        <br>
+                    <?php endif; ?>
+                </div>
+                <p>Vous n'avez aucune activité pour le moment.</p>
+            </div>
+        <?php endif; ?>
+    </main>
+    <footer>
+        <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p>
+    </footer>
+    <script src="../js/script.js"></script>
+</body>
 </html>

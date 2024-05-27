@@ -19,6 +19,10 @@
 // Version : 5.0.0
 // Date : 24.05.2024
 // Description : Ajout des méthodes searchUsers, getParticipantsForActivity, getActivityOrganizer et removeParticipantFromActivity
+//
+// Version : 6.0.0
+// Date : 27.05.2024
+// Description : 
 
 
 class Database {
@@ -163,53 +167,48 @@ $newLastname, $newEmail, $newGender)
     //                         GESTION ACTIVITES                       //
     /////////////////////////////////////////////////////////////////////
     
-//Récupère les activités en lien avec l'utilisateur selon son type 
-public function getActivitiesForUser($userId, $userType) {
-    if ($userType == 'S') { // Élève
-        $sql = "SELECT a.idActivity, a.actTitle, a.actDescription, 
-        u.useLastname AS organizerName 
+    //Recherche les activités d'un utilisateur
+    public function getActivitiesForUser($userId) {
+        $sql = "SELECT a.idActivity, a.actTitle, a.actDescription 
                 FROM t_activity a
                 JOIN t_participer p ON a.idActivity = p.fkActivity
-                JOIN t_user u ON u.idUser = (SELECT fkUser 
-                FROM t_participer 
-                WHERE fkActivity = a.idActivity LIMIT 1)
                 WHERE p.fkUser = ?";
         $params = [$userId];
-    } else if ($userType == 'T') { // Enseignant
-        $sql = "SELECT a.idActivity, a.actTitle, a.actDescription 
-                FROM t_activity a";
-        $params = [];
-    }
-
-    $stmt = $this->queryPrepare($sql, $params);
-    if ($stmt) {
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    return [];
-}
-
-// Crée une nouvelle activité
-public function createActivity($title, $description, $capacity, $userId) {
-    $sql = "INSERT INTO t_activity (actTitle, actDescription, actCapacity) 
-    VALUES (?, ?, ?)";
-    $params = [$title, $description, $capacity];
-
-    $stmt = $this->queryPrepare($sql, $params);
-    if ($stmt) {
-        $activityId = $this->conn->lastInsertId();
-
-        // Associer l'activité à l'utilisateur qui l'a créée
-        $sqlLink = "INSERT INTO t_participer (fkUser, fkActivity) 
-        VALUES (?, ?)";
-        $paramsLink = [$userId, $activityId];
-        $stmtLink = $this->queryPrepare($sqlLink, $paramsLink);
-
-        if ($stmtLink) {
-            return $activityId;
+        
+        $stmt = $this->queryPrepare($sql, $params);
+    
+        // Vérifie si des activités ont été trouvées
+        if ($stmt && $stmt->rowCount() > 0) {
+            $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return $activities;
+        } else {
+            return []; // Aucune activité trouvée
         }
     }
-    return false;
-}
+     
+    // Crée une nouvelle activité
+    public function createActivity($title, $description, $capacity, $userId) {
+        $sql = "INSERT INTO t_activity (actTitle, actDescription, actCapacity) 
+        VALUES (?, ?, ?)";
+        $params = [$title, $description, $capacity];
+
+        $stmt = $this->queryPrepare($sql, $params);
+        if ($stmt) {
+            $activityId = $this->conn->lastInsertId();
+
+            // Associer l'activité à l'utilisateur qui l'a créée
+            $sqlLink = "INSERT INTO t_participer (fkUser, fkActivity) 
+            VALUES (?, ?)";
+            $paramsLink = [$userId, $activityId];
+            $stmtLink = $this->queryPrepare($sqlLink, $paramsLink);
+
+            if ($stmtLink) {
+                return $activityId;
+            }
+        }
+        return false;
+    }
 
     // Supprime une activité et les participations associées
     public function deleteActivity($activityId) {
@@ -305,7 +304,7 @@ public function createActivity($title, $description, $capacity, $userId) {
         return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
     }    
 
-    // Recherche l'organisateur de l'activité
+    //Récupère les informations d'un utilisateur de type organisateur/enseignant
     public function getActivityOrganizer($activityId) {
         $sql = "SELECT u.useFirstname, u.useLastname 
                 FROM t_user u
@@ -313,10 +312,12 @@ public function createActivity($title, $description, $capacity, $userId) {
                 WHERE p.fkActivity = ? AND u.useType = 'T'";
         $params = [$activityId];
         $stmt = $this->queryPrepare($sql, $params);
-        
+    
         // Vérifie si un enseignant a été trouvé
         if ($stmt && $stmt->rowCount() > 0) {
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $organizer = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            return $organizer;
         } else {
             return null; // Aucun enseignant trouvé
         }
@@ -342,5 +343,50 @@ public function createActivity($title, $description, $capacity, $userId) {
             return false;
         }
     }
-}
+
+    // Récupères toutes les activités du site 
+    public function getAllActivities() {
+        $query = "SELECT * FROM t_activity";
+        $stmt = $this->queryPrepare($query);
+        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    }    
+
+    // Permet d'obtenir la capacité et le nombre actuel de participants de type élèves
+    public function checkActivityCapacity($activityId) {
+        $sql = "SELECT actCapacity, 
+                       (SELECT COUNT(*) 
+                        FROM t_participer 
+                        JOIN t_user ON t_participer.fkUser = t_user.idUser
+                        WHERE fkActivity = ? AND t_user.useType = 'S') as currentParticipants
+                FROM t_activity
+                WHERE idActivity = ?";
+        $params = [$activityId, $activityId];
+        $stmt = $this->queryPrepare($sql, $params);
+        
+        if ($stmt && $stmt->rowCount() > 0) {
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $data['actCapacity'] > $data['currentParticipants'];
+        } else {
+            return false;
+        }
+    }
+
+    //Récupère le nombre de participants d'une activité de type élèves
+    public function getParticipantCount($activityId) {
+        $sql = "SELECT COUNT(*) as participantCount 
+                FROM t_participer 
+                JOIN t_user ON t_participer.fkUser = t_user.idUser
+                WHERE fkActivity = ? AND t_user.useType = 'S'";
+        $params = [$activityId];
+        $stmt = $this->queryPrepare($sql, $params);
+        
+        if ($stmt && $stmt->rowCount() > 0) {
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $data['participantCount'];
+        } else {
+            return 0;
+        }
+    }
+    
+    }
 ?>

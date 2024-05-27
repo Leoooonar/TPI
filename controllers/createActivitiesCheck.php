@@ -1,8 +1,12 @@
 <?php
-//ETML
-//Auteur: Leonar Dupuis                                            
-//Date: 23.05.2024       
-//Description : Page de vérification de la création d'une activité
+// ETML
+// Auteur: Leonar Dupuis                                            
+// Date: 23.05.2024       
+// Description : Page de vérification de la création d'une activité
+//
+// Version : 2.0.0
+// Date : 27.05.2024
+// Description : Gestion d'erreur chiffre négatif.
 
 session_start();
 
@@ -73,7 +77,6 @@ $user = $_SESSION['user'];
                 </nav>
             </div>    
             <?php
-
             // Vérifie si les données du formulaire sont envoyées
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $title = $_POST['activity'];
@@ -82,14 +85,23 @@ $user = $_SESSION['user'];
 
                 // Vérifie que tous les champs sont remplis
                 if (!empty($title) && !empty($capacity) && !empty($description)) {
-                    // Crée une nouvelle activité
-                    $activityId = $db->createActivity($title, $description, $capacity, $user['idUser']);
-                    if ($activityId) {
-                        // Redirige vers le profil d'activités
-                        header("Location: ../resources/views/myActivities.php");
-                        exit();
+                    // Vérifie que la capacité n'est pas négative
+                    if ($capacity < 0) {
+                        echo '<div id="contentContainer">';
+                        echo '<br>';
+                        echo 'La capacité ne peut pas être négative.';
+                        echo '<br>';
+                        echo '</div>';
                     } else {
-                        echo "Erreur lors de la création de l'activité.";
+                        // Crée une nouvelle activité
+                        $activityId = $db->createActivity($title, $description, $capacity, $user['idUser']);
+                        if ($activityId) {
+                            // Redirige vers le profil d'activités
+                            header("Location: ../resources/views/myActivities.php");
+                            exit();
+                        } else {
+                            echo "Erreur lors de la création de l'activité.";
+                        }
                     }
                 } else {
                     echo '<div id="contentContainer">';
@@ -103,7 +115,10 @@ $user = $_SESSION['user'];
             }
             ?>
             <br>
-            <a id="pageBefore" href="../../resources/views/createActivities.php"><-Page précédente</a>
+            <div id="contentContainer">
+            <span style="color:red;">Erreur</span>
+            <br>
+            <a id="pageBefore" href="../../resources/views/createActivities.php"><- Page précédente</a>
             </div>  
         </main>
         <footer>
