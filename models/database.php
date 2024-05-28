@@ -47,84 +47,82 @@ class Database {
         }
     }
     
-    //Méthode pour préparer et exécuter une requête avec des paramètres
-    private function queryPrepare($query, $params = array()) {
-        try {
-            // Vérifie si la connexion à la base de données est établie
-            if(!$this->conn) {
-                throw new PDOException("La connexion à la base de données n'est pas établie.");
-            }
-
-            // Prépare la requête SQL
-            $stmt = $this->conn->prepare($query);
-
-            // Vérifie si la préparation de la requête a échoué
-            if(!$stmt) {
-                throw new PDOException("Erreur lors de la préparation de la requête.");
-            }
-
-            // Exécute la requête avec les paramètres fournis
-            $result = $stmt->execute($params);
-
-            // Vérifie si l'exécution de la requête a échoué
-            if(!$result) {
-                throw new PDOException("Erreur lors de l'exécution de la requête.");
-            }
-
-            // Retourne l'objet PDOStatement résultant
-            return $stmt;
-        } catch(PDOException $e) {
-            // Gère l'erreur
-            echo "Error: " . $e->getMessage();
-            return false;
+//Méthode pour préparer et exécuter une requête avec des paramètres
+private function queryPrepare($query, $params = array()) {
+    try {
+        // Vérifie si la connexion à la base de données est établie
+        if(!$this->conn) {
+            throw new PDOException("Connexion à la base de données non établie.");
         }
+        // Prépare la requête SQL
+        $stmt = $this->conn->prepare($query);
+
+        // Vérifie si la préparation de la requête a échoué
+        if(!$stmt) {
+            throw new PDOException("Erreur lors de la préparation de la requête.");
+        }
+        // Exécute la requête avec les paramètres fournis
+        $result = $stmt->execute($params);
+
+        // Vérifie si l'exécution de la requête a échoué
+        if(!$result) {
+            throw new PDOException("Erreur lors de l'exécution de la requête.");
+        }
+        // Retourne l'objet PDOStatement résultant
+        return $stmt;
+    } catch(PDOException $e) {
+        // Gère l'erreur
+        echo "Error: " . $e->getMessage();
+        return false;
     }
+}
 
     /////////////////////////////////////////////////////////////////////
     //                      GESTION UTILISATEURS                       //
     /////////////////////////////////////////////////////////////////////
     
-    //Méthode pour vérifier le login
-    public function checkLogin($username, $password) {
-        $query = "SELECT * FROM t_user WHERE useNickname = :username";
-        $stmt = $this->queryPrepare($query, array(':username' => $username));
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-        if ($row && password_verify($password, $row['usePassword'])) {
-            // Le mot de passe est correct, stocker l'utilisateur dans la session
-            $_SESSION['user'] = $row;
-            return true;
-        }
-    
-        // si le nom d'utilisateur ou le mot de passe est incorrect, retourne false
+//Méthode pour vérifier le login
+public function checkLogin($username, $password) {
+    $query = "SELECT * FROM t_user 
+    WHERE useNickname = :username";
+    $stmt = $this->queryPrepare($query, 
+    array(':username' => $username));
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($row && password_verify($password, $row['usePassword'])) {
+        //Le mot de passe est correct, le stock dans la session
+        $_SESSION['user'] = $row;
+        return true;
+    }
+    //si nom d'utilisateur ou le mot de passe incorrect -> false
+    return false;
+}
+        
+public function registerUser($username, $password, $firstname, $name) {
+    try {
+        // Hasher le mot de passe
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Préparer la requête d'insertion
+        $query = "INSERT INTO t_user (useNickname, usePassword, 
+        useFirstname, useLastname, useType) 
+        VALUES (:username, :password, :firstname, :name, 'S')";
+
+        $params = array(
+            ':username' => $username,
+            ':password' => $hashed_password,
+            ':firstname' => $firstname,
+            ':name' => $name
+        );
+        $this->queryPrepare($query, $params);
+        // Si l'insertion a réussi, retourner true
+        return true;
+    } catch(PDOException $e) {
+        // Une erreur s'est produite lors de l'insertion
+        echo "Error: " . $e->getMessage();
         return false;
     }
-        
-    public function registerUser($username, $password, $firstname, $name) {
-        try {
-            // Hasher le mot de passe
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    
-            // Préparer la requête d'insertion
-            $query = "INSERT INTO t_user (useNickname, usePassword, 
-            useFirstname, useLastname, useType) 
-                      VALUES (:username, :password, :firstname, :name, 'S')";
-            $params = array(
-                ':username' => $username,
-                ':password' => $hashed_password,
-                ':firstname' => $firstname,
-                ':name' => $name
-            );
-            $this->queryPrepare($query, $params);
-    
-            // Si l'insertion a réussi, retourner true
-            return true;
-        } catch(PDOException $e) {
-            // Une erreur s'est produite lors de l'insertion
-            echo "Error: " . $e->getMessage();
-            return false;
-        }
-    }
+}
 
 //Méthode pour faire la mise à jour des données utilisateur
 public function updateUserInfo($userId, $newNickname, $newFirstname, 
@@ -210,6 +208,43 @@ $newLastname, $newEmail, $newGender)
         return false;
     }
 
+//Récupère le nombre de participants d'une activité de type élèves
+public function getParticipantCount($activityId) {
+    $sql = "SELECT COUNT(*) as participantCount 
+            FROM t_participer 
+            JOIN t_user ON t_participer.fkUser = t_user.idUser
+            WHERE fkActivity = ? AND t_user.useType = 'S'";
+    $params = [$activityId];
+    $stmt = $this->queryPrepare($sql, $params);
+    
+    if ($stmt && $stmt->rowCount() > 0) {
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $data['participantCount'];
+    } else {
+        return 0;
+    }
+}
+
+// Mise à jour des informations de l'activité sélectionné par l'enseignant
+public function updateActivity($activityId, $title, $description, $capacity) {
+// Requête SQL pour mettre à jour l'activité
+$query = "UPDATE t_activity 
+SET actTitle = :title, actDescription = :description, actCapacity = :capacity 
+WHERE idActivity = :activityId";
+
+// Paramètres de la requête
+$params = array(
+    ":title" => $title,
+    ":description" => $description,
+    ":capacity" => $capacity,
+    ":activityId" => $activityId
+);
+    $stmt = $this->queryPrepare($query, $params);
+
+    // Retourne vrai si la mise à jour a réussi, sinon faux
+    return $stmt !== false;
+}
+
     // Supprime une activité et les participations associées
     public function deleteActivity($activityId) {
         // Supprimer les participations associées à l'activité
@@ -253,27 +288,6 @@ $newLastname, $newEmail, $newGender)
             return false;
         }
     }
-
-    // Mise à jour des informations de l'activité sélectionné par l'enseignant
-    public function updateActivity($activityId, $title, $description, $capacity) {
-        // Requête SQL pour mettre à jour l'activité
-        $query = "UPDATE t_activity SET actTitle = :title, actDescription = :description, actCapacity = :capacity WHERE idActivity = :activityId";
-    
-        // Paramètres de la requête
-        $params = array(
-            ":title" => $title,
-            ":description" => $description,
-            ":capacity" => $capacity,
-            ":activityId" => $activityId
-        );
-    
-        // Exécute la requête préparée
-        $stmt = $this->queryPrepare($query, $params);
-    
-        // Retourne vrai si la mise à jour a réussi, sinon faux
-        return $stmt !== false;
-    }
-
     
     // Rechercher des utilisateurs par prénom ou nom
     public function searchUsers($searchTerm) {
@@ -306,22 +320,20 @@ $newLastname, $newEmail, $newGender)
 
     //Récupère les informations d'un utilisateur de type organisateur/enseignant
     public function getActivityOrganizer($activityId) {
-        $sql = "SELECT u.useFirstname, u.useLastname 
+        $sql = "SELECT u.idUser, u.useFirstname, u.useLastname 
                 FROM t_user u
                 JOIN t_participer p ON u.idUser = p.fkUser
                 WHERE p.fkActivity = ? AND u.useType = 'T'";
         $params = [$activityId];
         $stmt = $this->queryPrepare($sql, $params);
-    
-        // Vérifie si un enseignant a été trouvé
+        
         if ($stmt && $stmt->rowCount() > 0) {
-            $organizer = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            return $organizer;
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         } else {
             return null; // Aucun enseignant trouvé
         }
     }
+    
     
     // Méthode pour supprimer un participant d'une activité
     public function removeParticipantFromActivity($userId, $activityId) {
@@ -371,22 +383,19 @@ $newLastname, $newEmail, $newGender)
         }
     }
 
-    //Récupère le nombre de participants d'une activité de type élèves
-    public function getParticipantCount($activityId) {
-        $sql = "SELECT COUNT(*) as participantCount 
-                FROM t_participer 
-                JOIN t_user ON t_participer.fkUser = t_user.idUser
-                WHERE fkActivity = ? AND t_user.useType = 'S'";
-        $params = [$activityId];
-        $stmt = $this->queryPrepare($sql, $params);
-        
+    /////////////////////////////////////////////////////////////////////
+    //                  CONSULTATION PROFIL UTILISATEUR                //
+    /////////////////////////////////////////////////////////////////////
+    
+    //Récupère les infos d'un utilisateur à partir de son id
+    public function getUserById($userId) {
+        $sql = "SELECT * FROM t_user WHERE idUser = ?";
+        $stmt = $this->queryPrepare($sql, [$userId]);
         if ($stmt && $stmt->rowCount() > 0) {
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $data['participantCount'];
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         } else {
-            return 0;
+            return null;
         }
     }
-    
-    }
+}
 ?>

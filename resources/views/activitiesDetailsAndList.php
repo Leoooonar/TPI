@@ -141,7 +141,7 @@ if ($capacityCheck) {
                         // Infos de l'organisateur
                         $organizer = $db->getActivityOrganizer($activityId);
                         if ($organizer) {
-                            echo '<p><strong>Organisateur:</strong> ' . htmlspecialchars($organizer['useFirstname']) . ' ' . htmlspecialchars($organizer['useLastname']) . '</p>';
+                            echo '<p><strong>Organisateur:</strong> <a href="userProfile.php?id=' . htmlspecialchars($organizer['idUser']) . '" class="actDescription">' . htmlspecialchars($organizer['useFirstname']) . ' ' . htmlspecialchars($organizer['useLastname']) . '</a></p>';
                         } else {
                             echo '<p><strong>Organisateur:</strong> Inconnu</p>';
                         }
@@ -155,14 +155,14 @@ if ($capacityCheck) {
                         echo '<p><strong>Description:</strong> ' . $activityDescription . '</p>';
                     echo '</div>';
                 }
-            ?>
+            ?> 
             <br>
             <?php if (isset($error)): ?>
                 <div id="errormsg">
-                <p>Erreur.</p>
-                <br>
+                    <p>Erreur.</p>
+                    <br>
                 </div>
-                    <?= htmlspecialchars($error) ?>
+                <?= htmlspecialchars($error) ?>
                 <br>
             <?php endif; ?>
             <h2 id="secondTitle">Liste des participants</h2>
@@ -194,7 +194,7 @@ if ($capacityCheck) {
             <?php endif; ?>
             <?php if (!empty($participants)): ?>
                 <!-- Liste des participants -->
-                <table>
+                <table class="participantList">
                     <thead>
                         <tr>
                             <th>Prénom</th>
@@ -207,8 +207,8 @@ if ($capacityCheck) {
                     <tbody>
                         <?php foreach ($participants as $participant): ?>
                             <tr>
-                                <td><?= htmlspecialchars($participant['useFirstname']) ?></td>
-                                <td><?= htmlspecialchars($participant['useLastname']) ?></td>
+                                <td><a href="userProfile.php?id=<?= htmlspecialchars($participant['idUser']) ?>" class="actDescription"><?= htmlspecialchars($participant['useFirstname']) ?></a></td>
+                                <td><a href="userProfile.php?id=<?= htmlspecialchars($participant['idUser']) ?>" class="actDescription"><?= htmlspecialchars($participant['useLastname']) ?></a></td>
                                 <?php if ($user['useType'] == 'T'): ?> 
                                     <td>
                                         <form method="POST" style="display:inline;">

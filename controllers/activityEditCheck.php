@@ -100,8 +100,6 @@ if (isset($_SESSION['user'])) {
                     if ($activityCapacity < $currentParticipantCount) {
                         echo '<div id="contentContainer">';
                         echo '<div id="errormsg">';
-                        echo '<p>Erreur.</p>';
-                        echo '<br>';
                         echo '</div>';
                         echo 'Nombre de participants trop élevé pour être modifié.';
                         echo '<br>';
@@ -122,15 +120,12 @@ if (isset($_SESSION['user'])) {
 
                             if ($result) {
                                 // Redirige vers une page de confirmation
-                                header("Location: ../resources/views/myActivities.php");
+                                header("Location: ../resources/views/myActivities.php?edit=success");
                                 exit();
                             } else {
                                 // Gère le cas où la mise à jour a échoué
                                 // Par exemple, affiche un message d'erreur
-                                echo '<div id="contentContainer">';
-                                echo '<br>';
-                                echo "La mise à jour de l'activité a échoué. Veuillez réessayer.";
-                                echo '<br>';
+                                header("Location: ../resources/views/myActivities.php?edit=error");
                             }
                         }
                     }

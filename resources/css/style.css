@@ -419,6 +419,12 @@ tr:nth-child(even) {
   background-color: rgba(26, 156, 0, 0.993);
 }
 
+.participantList{
+  width: 30%;
+  border-collapse: collapse;
+  margin: auto;
+}
+
 
 /*************************/
 /*        ACTIVITES      */
@@ -433,6 +439,20 @@ tr:nth-child(even) {
 #searchResult{
   color: green;
   margin-right: 10px;
+}
+
+.actDescription{
+  color: black;
+  text-decoration: underline;
+}
+
+.actDescription:hover{
+  color: #002d13a2;
+}
+
+#thirdTitle{
+  text-align: center;
+    margin: 15px;
 }
 
 /*************************/

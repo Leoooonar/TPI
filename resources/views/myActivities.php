@@ -94,6 +94,24 @@ unset($activity); // Casse la référence avec le dernier élément
             <?php endif; ?>
         </div>
         <br>
+        <div id="searchResult">
+            <div id="contentContainer">
+                <?php if (isset($_GET['create']) && $_GET['create'] === 'success'): ?>
+                    <div class="success-message">L'activité a bien été créée.</div>
+                    <br>
+                <?php elseif ($_GET['create'] === 'error'): ?>
+                    <span style="color:red;">Erreur lors de la création de l'activité.</span>
+                    <br>
+                <?php endif; ?>
+                <?php if (isset($_GET['edit']) && $_GET['edit'] === 'success'): ?>
+                    <div class="success-message">L'activité a bien été modifié.</div>
+                    <br>
+                <?php elseif ($_GET['edit'] === 'error'): ?>
+                    <span style="color:red;">Erreur lors de la modification de l'activité.</span>
+                    <br>
+                <?php endif; ?>
+            </div>
+        </div>
         <?php if (!empty($activities)): ?>
             <table>
                 <thead>

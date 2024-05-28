@@ -30,7 +30,12 @@ foreach ($activities as &$activity) {
     if ($organizer) {
         $activity['organizerFirstname'] = $organizer['useFirstname'] ?? '';
         $activity['organizerName'] = $organizer['useLastname'] ?? '';
-        $activity['actDescription'] .= ' (Organisé par ' . htmlspecialchars($organizer['useFirstname']) . ' ' . htmlspecialchars($organizer['useLastname']) . ')';
+        $organizerId = $organizer['idUser'];
+        if ($organizerId) {
+            $activity['actDescription'] .= ' (Organisé par <a class="actDescription" href="userProfile.php?id=' . htmlspecialchars($organizerId) . '">' . htmlspecialchars($organizer['useFirstname']) . ' ' . htmlspecialchars($organizer['useLastname']) . '</a>)';
+        } else {
+            $activity['actDescription'] .= ' (Organisé par ' . htmlspecialchars($organizer['useFirstname']) . ' ' . htmlspecialchars($organizer['useLastname']) . ')';
+        }
     } else {
         $activity['organizerFirstname'] = '';
         $activity['organizerName'] = '';
@@ -54,50 +59,50 @@ unset($activity); // Casse la référence du dernier élément
     <title>Liste des activités</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-    <body>
-        <main>
-            <div class="headContainer">
-                <nav class="navbar">
-                    <ul>
-                        <div class="left-content">
-                            <div class="active">
+<body>
+    <main>
+        <div class="headContainer">
+            <nav class="navbar">
+                <ul>
+                    <div class="left-content">
+                        <div class="active">
                             <a href="#"><li><h1>LISTE DES ACTIVITES</h1></li></a>
-                            </div>
-                        </div>    
-                        <div class="center-content">
-                            <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
                         </div>
-                        <div class="right-content">
-                            <?php
-                                if ($isLoggedIn) {
-                                    echo '<li class="nav-item dropdown">';
-                                        echo '<h1>MON COMPTE</h1>';
-                                        echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                        echo '<div class="dropdown-content">';
-                                        echo '<a href="userDetails.php">Détails du compte</a>';
-                                        echo '<a href="myActivities.php">Mes activités</a>';
-                                        echo '<a href="logout.php">Déconnexion</a>';
-                                        echo '</div>';
-                                    echo '</li>';
-                                } else {
-                                    echo '<li class="nav-item dropdown">';
-                                    echo '<a href="./resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                    </div>    
+                    <div class="center-content">
+                        <li><a href="../../index.php"><img id="logoImg" src="/resources/img/logo.webp" alt="Logo sportetculture"></a></li>
+                    </div>
+                    <div class="right-content">
+                        <?php
+                            if ($isLoggedIn) {
+                                echo '<li class="nav-item dropdown">';
+                                    echo '<h1>MON COMPTE</h1>';
                                     echo '<a href="javascript:void(0)" class="dropbtn"></a>';
-                                        echo '<div class="dropdown-content">';
-                                        echo '<a href="./resources/views/authentification/register.php">Inscription</a>'; 
-                                        echo '</div>';
-                                    echo '</li>';
-                                }
-                            ?>
-                        </div>
-                    </ul>
-                </nav>
-            </div>    
-            <br>
-            <h2 id="secondTitle">Liste des activités</h2>
-            <hr>
-            <br>
-            <div id="contentContainer">
+                                    echo '<div class="dropdown-content">';
+                                    echo '<a href="userDetails.php">Détails du compte</a>';
+                                    echo '<a href="myActivities.php">Mes activités</a>';
+                                    echo '<a href="logout.php">Déconnexion</a>';
+                                    echo '</div>';
+                                echo '</li>';
+                            } else {
+                                echo '<li class="nav-item dropdown">';
+                                echo '<a href="./resources/views/authentification/login.php"><h1>SE CONNECTER</h1></a>';
+                                echo '<a href="javascript:void(0)" class="dropbtn"></a>';
+                                    echo '<div class="dropdown-content">';
+                                    echo '<a href="./resources/views/authentification/register.php">Inscription</a>'; 
+                                    echo '</div>';
+                                echo '</li>';
+                            }
+                        ?>
+                    </div>
+                </ul>
+            </nav>
+        </div>    
+        <br>
+        <h2 id="secondTitle">Liste des activités</h2>
+        <hr>
+        <br>
+        <div id="contentContainer">
             <?php
                 if (isset($_GET['subscribe'])) {
                     if ($_GET['subscribe'] === 'success') {
@@ -119,38 +124,44 @@ unset($activity); // Casse la référence du dernier élément
                     }
                 }
             ?>
+            <div id="textBlock">
+                <p id="secondParagraph">
+                Cliquez sur le nom souligné d’un enseignant pour consulter les activités qu’il organise !
+                </p>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>NOM</th>
-                        <th>STATUT</th>
-                        <th>DESCRIPTION</th>
-                        <th>ACTION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                foreach ($activities as $activity) {
-                    echo '<tr>';
-                    echo '<td>' . htmlspecialchars($activity['actTitle']) . '</td>';
-                    echo '<td>' . $activity['status'] . '</td>';
-                    echo '<td>' . htmlspecialchars($activity['actDescription']) . '</td>';
-                    echo '<td>';
-                    if ($user['useType'] == 'S' && strpos($activity['status'], 'DISPONIBLE') !== false) {
-                        echo '<button class="add-button" onclick="window.location.href=\'../../controllers/subscribe.php?id=' . $activity['idActivity'] . '\'">S\'inscrire</button>';
-                    }
-                    echo '<button onclick="window.location.href=\'activitiesDetailsAndList.php?id=' . $activity['idActivity'] . '\'">Consulter</button>';
-                    echo '</td>';
-                    echo '</tr>';
+        </div>
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>NOM</th>
+                    <th>STATUT</th>
+                    <th>DESCRIPTION</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+            foreach ($activities as $activity) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($activity['actTitle']) . '</td>';
+                echo '<td>' . $activity['status'] . '</td>';
+                echo '<td>' . html_entity_decode($activity['actDescription']) . '</td>'; 
+                echo '<td>';
+                if ($user['useType'] == 'S' && strpos($activity['status'], 'DISPONIBLE') !== false) {
+                    echo '<button class="add-button" onclick="window.location.href=\'../../controllers/subscribe.php?id=' . $activity['idActivity'] . '\'">S\'inscrire</button>';
                 }
-                ?>
-                </tbody>
-            </table>
-        </main>
-        <footer>
-            <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 
-        </footer>
-        <script src="../js/script.js"></script>
-    </body>
+                echo '<button onclick="window.location.href=\'activitiesDetailsAndList.php?id=' . $activity['idActivity'] . '\'">Consulter</button>';
+                echo '</td>';
+                echo '</tr>';
+            }
+            ?>
+            </tbody>
+        </table>
+    </main>
+    <footer>
+        <p class="item-2">Leonar Dupuis<br><a id="mail" href="mailto:sportetculture@gmail.com">sportetculture@gmail.com</a></p> 
+    </footer>
+    <script src="../js/script.js"></script>
+</body>
 </html>

@@ -89,7 +89,7 @@ $user = $_SESSION['user'];
                     if ($capacity < 0) {
                         echo '<div id="contentContainer">';
                         echo '<br>';
-                        echo 'La capacité ne peut pas être négative.';
+                        echo 'Le nombre ne peut pas être négatif.';
                         echo '<br>';
                         echo '</div>';
                     } else {
@@ -97,10 +97,10 @@ $user = $_SESSION['user'];
                         $activityId = $db->createActivity($title, $description, $capacity, $user['idUser']);
                         if ($activityId) {
                             // Redirige vers le profil d'activités
-                            header("Location: ../resources/views/myActivities.php");
+                            header("Location: ../resources/views/myActivities.php?create=success");
                             exit();
                         } else {
-                            echo "Erreur lors de la création de l'activité.";
+                            header("Location: ../resources/views/myActivities.php?create=error");
                         }
                     }
                 } else {

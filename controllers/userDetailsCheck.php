@@ -94,7 +94,6 @@ $user = $_SESSION['user'];
                         echo '<div id="contentContainer">';
                         echo '<br>';
                         echo "<p>$error</p>";
-                        echo '<br>';
                     }
                 } else {
                     // Met à jour les informations de l'utilisateur dans la base de données
@@ -117,6 +116,9 @@ $user = $_SESSION['user'];
                 }
             }
             ?>
+            <br>
+            <div id="contentContainer">
+            <span style="color:red;">Erreur</span>
             <br>
             <a id="pageBefore" href="../../resources/views/userEditDetails.php"><-Page précédente</a>
             </div>  

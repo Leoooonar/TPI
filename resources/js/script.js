@@ -1,4 +1,4 @@
-//Supprimme une activité sous un message form Windows (appel deleteActivity.php dans le controllers)
+//Supprime une activité sous un message pop-up et appelle deleteActivity.php
 function confirmDelete(activityId) {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette activité ?")) {
         // Utilisation de l'API Fetch pour envoyer une requête DELETE au serveur
@@ -19,3 +19,4 @@ function confirmDelete(activityId) {
         });
     }
 }
+
