@@ -110,6 +110,13 @@ unset($activity); // Casse la référence avec le dernier élément
                     <span style="color:red;">Erreur lors de la modification de l'activité.</span>
                     <br>
                 <?php endif; ?>
+                <?php if (isset($_GET['delete']) && $_GET['delete'] === 'success'): ?>
+                    <div class="success-message">L'activité a bien été supprimée.</div>
+                    <br>
+                <?php elseif ($_GET['delete'] === 'error'): ?>
+                    <span style="color:red;">Erreur lors de la supression de l'activité.</span>
+                    <br>
+                <?php endif; ?>
             </div>
         </div>
         <?php if (!empty($activities)): ?>

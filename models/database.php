@@ -245,50 +245,88 @@ $params = array(
     return $stmt !== false;
 }
 
-    // Supprime une activité et les participations associées
-    public function deleteActivity($activityId) {
-        // Supprimer les participations associées à l'activité
-        $sqlDeleteParticipations = "DELETE FROM t_participer WHERE fkActivity = ?";
-        $paramsDeleteParticipations = [$activityId];
-        $stmtDeleteParticipations = $this->queryPrepare($sqlDeleteParticipations, $paramsDeleteParticipations);
+// Supprime une activité et les participations associées
+public function deleteActivity($activityId) {
+    // Supprimer les participations associées à l'activité
+    $sqlDeleteParticipations = "DELETE FROM t_participer WHERE fkActivity = ?";
+    $paramsDeleteParticipations = [$activityId];
+    $stmtDeleteParticipations = $this->queryPrepare($sqlDeleteParticipations, $paramsDeleteParticipations);
 
-        // Supprimer l'activité
-        $sqlDeleteActivity = "DELETE FROM t_activity WHERE idActivity = ?";
-        $paramsDeleteActivity = [$activityId];
-        $stmtDeleteActivity = $this->queryPrepare($sqlDeleteActivity, $paramsDeleteActivity);
+    // Supprimer l'activité
+    $sqlDeleteActivity = "DELETE FROM t_activity WHERE idActivity = ?";
+    $paramsDeleteActivity = [$activityId];
+    $stmtDeleteActivity = $this->queryPrepare($sqlDeleteActivity, $paramsDeleteActivity);
 
-        // Vérifier si les deux suppressions ont réussi
-        if ($stmtDeleteParticipations !== false && $stmtDeleteActivity !== false) {
-            return true;
-        } else {
-            return false;
-        }
+    // Vérifier si les deux suppressions ont réussi
+    if ($stmtDeleteParticipations !== false && $stmtDeleteActivity !== false) {
+        return true;
+    } else {
+        return false;
     }
+}
 
-    // Méthode pour récupérer les détails d'une activité par son ID
-    public function getActivityById($activityId) {
-        try {
-            // Requête SQL avec un paramètre :activity_id
-            $query = "SELECT * FROM t_activity WHERE idActivity = :activity_id";
+// Méthode pour récupérer les détails d'une activité par son ID
+public function getActivityById($activityId) {
+    try {
+        // Requête SQL avec un paramètre :activity_id
+        $query = "SELECT * FROM t_activity 
+        WHERE idActivity = :activity_id";
 
-            // Paramètres à passer à la requête
-            $params = array(':activity_id' => $activityId);
+        // Paramètres à passer à la requête
+        $params = array(':activity_id' => $activityId);
 
-            // Exécute la requête préparée avec des paramètres
-            $stmt = $this->queryPrepare($query, $params);
+        // Exécute la requête préparée avec des paramètres
+        $stmt = $this->queryPrepare($query, $params);
 
-            // Récupère la ligne résultante sous forme de tableau associatif
-            $activityDetails = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Récup. la ligne du résultat en tableau assiociatif
+        $activityDetails = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Retourne les détails de l'activité
-            return $activityDetails;
-        } catch(PDOException $e) {
-            // Gère l'erreur
-            echo "Error: " . $e->getMessage();
-            return false;
-        }
+        // Retourne les détails de l'activité
+        return $activityDetails;
+    } catch(PDOException $e) {
+        // Gère l'erreur
+        echo "Error: " . $e->getMessage();
+        return false;
     }
+}
+
+//Récupère les informations d'un utilisateur type enseignant
+public function getActivityOrganizer($activityId) {
+    $sql = "SELECT u.idUser, u.useFirstname, u.useLastname 
+            FROM t_user u
+            JOIN t_participer p ON u.idUser = p.fkUser
+            WHERE p.fkActivity = ? AND u.useType = 'T'";
+    $params = [$activityId];
+    $stmt = $this->queryPrepare($sql, $params);
     
+    if ($stmt && $stmt->rowCount() > 0) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } else {
+        return null; // Aucun enseignant trouvé
+    }
+}
+
+// Permet d'obtenir la capacité et le nombre actuel de participants de type élèves
+public function checkActivityCapacity($activityId) {
+    $sql = "SELECT actCapacity, 
+                    (SELECT COUNT(*) 
+                    FROM t_participer 
+                    JOIN t_user ON t_participer.fkUser = t_user.idUser
+                    WHERE fkActivity = ? AND t_user.useType = 'S') 
+                    as currentParticipants
+            FROM t_activity
+            WHERE idActivity = ?";
+    $params = [$activityId, $activityId];
+    $stmt = $this->queryPrepare($sql, $params);
+    
+    if ($stmt && $stmt->rowCount() > 0) {
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $data['actCapacity'] > $data['currentParticipants'];
+    } else {
+        return false;
+    }
+}
+
     // Rechercher des utilisateurs par prénom ou nom
     public function searchUsers($searchTerm) {
         $query = "SELECT idUser, useFirstname, useLastname, useNickname 
@@ -317,23 +355,6 @@ $params = array(
         $stmt = $this->queryPrepare($query, array($activityId));
         return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
     }    
-
-    //Récupère les informations d'un utilisateur de type organisateur/enseignant
-    public function getActivityOrganizer($activityId) {
-        $sql = "SELECT u.idUser, u.useFirstname, u.useLastname 
-                FROM t_user u
-                JOIN t_participer p ON u.idUser = p.fkUser
-                WHERE p.fkActivity = ? AND u.useType = 'T'";
-        $params = [$activityId];
-        $stmt = $this->queryPrepare($sql, $params);
-        
-        if ($stmt && $stmt->rowCount() > 0) {
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } else {
-            return null; // Aucun enseignant trouvé
-        }
-    }
-    
     
     // Méthode pour supprimer un participant d'une activité
     public function removeParticipantFromActivity($userId, $activityId) {
@@ -362,26 +383,6 @@ $params = array(
         $stmt = $this->queryPrepare($query);
         return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
     }    
-
-    // Permet d'obtenir la capacité et le nombre actuel de participants de type élèves
-    public function checkActivityCapacity($activityId) {
-        $sql = "SELECT actCapacity, 
-                       (SELECT COUNT(*) 
-                        FROM t_participer 
-                        JOIN t_user ON t_participer.fkUser = t_user.idUser
-                        WHERE fkActivity = ? AND t_user.useType = 'S') as currentParticipants
-                FROM t_activity
-                WHERE idActivity = ?";
-        $params = [$activityId, $activityId];
-        $stmt = $this->queryPrepare($sql, $params);
-        
-        if ($stmt && $stmt->rowCount() > 0) {
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $data['actCapacity'] > $data['currentParticipants'];
-        } else {
-            return false;
-        }
-    }
 
     /////////////////////////////////////////////////////////////////////
     //                  CONSULTATION PROFIL UTILISATEUR                //
