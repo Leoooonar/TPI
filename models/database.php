@@ -20,9 +20,7 @@
 // Date : 24.05.2024
 // Description : Ajout des méthodes searchUsers, getParticipantsForActivity, getActivityOrganizer et removeParticipantFromActivity
 //
-// Version : 6.0.0
-// Date : 27.05.2024
-// Description : 
+
 
 
 class Database {
@@ -327,55 +325,67 @@ public function checkActivityCapacity($activityId) {
     }
 }
 
-    // Rechercher des utilisateurs par prénom ou nom
-    public function searchUsers($searchTerm) {
-        $query = "SELECT idUser, useFirstname, useLastname, useNickname 
-                  FROM t_user 
-                  WHERE (useFirstname LIKE :searchTerm OR useLastname LIKE :searchTerm OR useNickname LIKE :searchTerm)
-                  AND useType = 'S'";
-        $params = array(':searchTerm' => '%' . $searchTerm . '%');
-        return $this->queryPrepare($query, $params)->fetchAll(PDO::FETCH_ASSOC);
-    }    
+//Recherche les participants inscris à une activité
+public function getParticipantsForActivity($activityId) {
+    $query = "
+        SELECT u.idUser, u.useFirstname, 
+        u.useLastname, u.useNickname
+        FROM t_participer p
+        JOIN t_user u ON p.fkUser = u.idUser
+        WHERE p.fkActivity = ? AND u.useType = 'S'
+    ";
+    $stmt = $this->queryPrepare($query, array($activityId));
+    return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+}    
 
-    // Ajouter un participant à une activité
-    public function addParticipantToActivity($userId, $activityId) {
-        $query = "INSERT INTO t_participer (fkUser, fkActivity) VALUES (:userId, :activityId)";
-        $params = array(':userId' => $userId, ':activityId' => $activityId);
-        return $this->queryPrepare($query, $params);
+// Rechercher des utilisateurs par prénom ou nom ou pseudo
+public function searchUsers($searchTerm) {
+    $query = "SELECT idUser, useFirstname, useLastname, useNickname 
+                FROM t_user 
+                WHERE (useFirstname 
+                LIKE :searchTerm 
+                OR useLastname 
+                LIKE :searchTerm 
+                OR useNickname 
+                LIKE :searchTerm)
+                AND useType = 'S'";
+    $params = array(':searchTerm' => '%' . $searchTerm . '%');
+    return $this->queryPrepare($query, $params)->fetchAll(PDO::FETCH_ASSOC);
+}    
+
+// Ajouter un participant à une activité
+public function addParticipantToActivity($userId, $activityId) {
+    $query = "INSERT INTO t_participer (fkUser, fkActivity) 
+    VALUES (:userId, :activityId)";
+    $params = array(':userId' => $userId, 
+    ':activityId' => $activityId);
+    return $this->queryPrepare($query, $params);
+}
+
+
+// Méthode pour supprimer un participant d'une activité
+public function removeParticipantFromActivity($userId, $activityId) {
+    try {
+        // Requête SQL pour supprimer le participant de l'activité
+        $query = "DELETE FROM t_participer 
+        WHERE fkUser = :userId 
+        AND fkActivity = :activityId";
+
+        // Paramètres de la requête
+        $params = array(':userId' => $userId, 
+        ':activityId' => $activityId);
+
+        // Exécute la requête avec la méthode queryPrepare
+        $stmt = $this->queryPrepare($query, $params);
+
+        // Retourne true si la suppression a réussi
+        return $stmt !== false;
+    } catch (PDOException $e) {
+        // En cas d'erreur, affiche l'erreur et retourne false
+        echo "Erreur : " . $e->getMessage();
+        return false;
     }
-
-    //Recherche les participants inscris à une activité
-    public function getParticipantsForActivity($activityId) {
-        $query = "
-            SELECT u.idUser, u.useFirstname, u.useLastname, u.useNickname
-            FROM t_participer p
-            JOIN t_user u ON p.fkUser = u.idUser
-            WHERE p.fkActivity = ? AND u.useType = 'S'
-        ";
-        $stmt = $this->queryPrepare($query, array($activityId));
-        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-    }    
-    
-    // Méthode pour supprimer un participant d'une activité
-    public function removeParticipantFromActivity($userId, $activityId) {
-        try {
-            // Requête SQL pour supprimer le participant de l'activité
-            $query = "DELETE FROM t_participer WHERE fkUser = :userId AND fkActivity = :activityId";
-
-            // Paramètres de la requête
-            $params = array(':userId' => $userId, ':activityId' => $activityId);
-
-            // Exécute la requête avec la méthode queryPrepare
-            $stmt = $this->queryPrepare($query, $params);
-
-            // Retourne true si la suppression a réussi
-            return $stmt !== false;
-        } catch (PDOException $e) {
-            // En cas d'erreur, affiche l'erreur et retourne false
-            echo "Erreur : " . $e->getMessage();
-            return false;
-        }
-    }
+}
 
     // Récupères toutes les activités du site 
     public function getAllActivities() {
@@ -388,15 +398,15 @@ public function checkActivityCapacity($activityId) {
     //                  CONSULTATION PROFIL UTILISATEUR                //
     /////////////////////////////////////////////////////////////////////
     
-    //Récupère les infos d'un utilisateur à partir de son id
-    public function getUserById($userId) {
-        $sql = "SELECT * FROM t_user WHERE idUser = ?";
-        $stmt = $this->queryPrepare($sql, [$userId]);
-        if ($stmt && $stmt->rowCount() > 0) {
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } else {
-            return null;
-        }
+//Récupère les infos d'un utilisateur à partir de l'id
+public function getUserById($userId) {
+    $sql = "SELECT * FROM t_user WHERE idUser = ?";
+    $stmt = $this->queryPrepare($sql, [$userId]);
+    if ($stmt && $stmt->rowCount() > 0) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } else {
+        return null;
     }
+}
 }
 ?>

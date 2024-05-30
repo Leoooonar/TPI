@@ -106,7 +106,7 @@ unset($activity); // Casse la référence du dernier élément
             <?php
                 if (isset($_GET['subscribe'])) {
                     if ($_GET['subscribe'] === 'success') {
-                        echo '<div class="success-message">Vous vous êtes inscrit avec succès à cette activité.</div>';
+                        echo '<span style="color:green;">Vous vous êtes inscrit avec succès à cette activité.</span>';
                         echo '<br>';
                     } elseif ($_GET['subscribe'] === 'error') {
                         echo '<span style="color:red;">Erreur</span>.Veuillez réessayer plus tard.';
