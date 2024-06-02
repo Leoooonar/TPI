@@ -2,7 +2,8 @@
 //ETML
 //Auteur: Leonar Dupuis                                            
 //Date: 17.05.2024       
-//Description : Page gérant fonctions directement lié à la base de données, permet la connexion à la db.  
+//Description : Page gérant fonctions directement lié à la base de données, 
+//permet la connexion à la db.  
 //
 // Version : 2.0.0
 // Date : 21.05.2024
@@ -14,12 +15,18 @@
 //
 // Version : 4.0.0
 // Date : 23.05.2024
-// Description : Ajout des méthodes createActivity, getActivityById, updateActivity, deleteActivity et getActivitiesForUser
+// Description : Ajout des méthodes createActivity, getActivityById, 
+// updateActivity, deleteActivity et getActivitiesForUser
 //
 // Version : 5.0.0
 // Date : 24.05.2024
-// Description : Ajout des méthodes searchUsers, getParticipantsForActivity, getActivityOrganizer et removeParticipantFromActivity
+// Description : Ajout des méthodes searchUsers, getParticipantsForActivity, 
+// getActivityOrganizer et removeParticipantFromActivity
 //
+// Version : 6.0.0
+// Date : 27.05.2024
+// Description : Ajout des méthodes getUserById et getAllActivities
+
 
 
 
